@@ -123,8 +123,8 @@ function RouteGuidePage() {
                 {diff.label}
               </Badge>
             )}
-            <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl">{route.name}</h1>
-            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/90">
+            <h1 className="text-3xl font-bold text-primary-foreground sm:text-4xl lg:text-5xl">{route.name}</h1>
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-primary-foreground/90">
               <span className="flex items-center gap-1.5">
                 <TrendingUp className="h-4 w-4" /> {route.gpx_parsed?.distance ?? 0} km
               </span>
@@ -321,19 +321,19 @@ function RouteGuidePage() {
           <DialogTitle className="sr-only">Galeria de imagenes</DialogTitle>
           <button
             onClick={() => setLightboxOpen(false)}
-            className="absolute right-4 top-4 z-50 rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
+            className="absolute right-4 top-4 z-50 rounded-full bg-primary-foreground/10 p-2 text-primary-foreground hover:bg-primary-foreground/20 transition-colors"
           >
             <X className="h-6 w-6" />
           </button>
           <button
             onClick={prevImage}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-50 rounded-full bg-white/10 p-3 text-white hover:bg-white/20 transition-colors"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-50 rounded-full bg-primary-foreground/10 p-3 text-primary-foreground hover:bg-primary-foreground/20 transition-colors"
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
           <button
             onClick={nextImage}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-50 rounded-full bg-white/10 p-3 text-white hover:bg-white/20 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-50 rounded-full bg-primary-foreground/10 p-3 text-primary-foreground hover:bg-primary-foreground/20 transition-colors"
           >
             <ArrowRight className="h-6 w-6" />
           </button>
@@ -343,7 +343,7 @@ function RouteGuidePage() {
               alt={`Foto ${lightboxIndex + 1}`}
               className="max-h-[80vh] max-w-full object-contain rounded-lg"
             />
-            <p className="text-sm text-white/70">
+            <p className="text-sm text-primary-foreground/70">
               {lightboxIndex + 1} / {galleryImages.length}
             </p>
           </div>

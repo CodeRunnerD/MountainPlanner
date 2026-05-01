@@ -32,17 +32,17 @@ function LandingPage() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0a0e27]/80">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-background/80">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
           <Link to="/" className="flex items-center gap-2">
             <Mountain className="h-7 w-7 text-[#FDE68A]" />
-            <span className="text-xl font-bold text-white">MountainPlanner</span>
+            <span className="text-xl font-bold text-primary-foreground">MountainPlanner</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="text-white hover:bg-white/10" asChild>
+            <Button variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10" asChild>
               <Link to="/login">Entrar</Link>
             </Button>
-            <Button className="bg-white text-[#0C4A6E] hover:bg-white/90" asChild>
+            <Button className="bg-primary-foreground text-background hover:bg-primary-foreground/90" asChild>
               <Link to="/register">Crear cuenta</Link>
             </Button>
           </div>
@@ -119,7 +119,7 @@ function LandingPage() {
         <section className="py-16 lg:py-20">
           <div className="mx-auto max-w-7xl px-4 lg:px-8">
             <div className="grid gap-8 sm:grid-cols-3">
-              <div className="rounded-2xl border border-white/20 bg-white/80 p-6 shadow-sm">
+              <div className="rounded-2xl border border-primary-foreground/20 bg-card/80 p-6 shadow-sm">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
                   <Compass className="h-6 w-6 text-primary" />
                 </div>
@@ -128,7 +128,7 @@ function LandingPage() {
                   Explora rutas documentadas con waypoints, perfiles de elevación y requisitos técnicos.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/20 bg-white/80 p-6 shadow-sm">
+              <div className="rounded-2xl border border-primary-foreground/20 bg-card/80 p-6 shadow-sm">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary/20">
                   <Users className="h-6 w-6 text-secondary" />
                 </div>
@@ -137,7 +137,7 @@ function LandingPage() {
                   Inscríbete en expediciones, gestiona tu equipo y coordina el transporte con el grupo.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/20 bg-white/80 p-6 shadow-sm">
+              <div className="rounded-2xl border border-primary-foreground/20 bg-card/80 p-6 shadow-sm">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10">
                   <Map className="h-6 w-6 text-accent" />
                 </div>
@@ -171,7 +171,7 @@ function LandingPage() {
                     key={trip.id}
                     to="/expeditions/$tripId"
                     params={{ tripId: trip.id }}
-                    className="group block overflow-hidden rounded-2xl border border-white/20 bg-white/90 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+                    className="group block overflow-hidden rounded-2xl border border-primary-foreground/20 bg-card/90 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
                   >
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <img
@@ -181,7 +181,7 @@ function LandingPage() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       <div className="absolute bottom-3 left-3">
-                        <Badge className="bg-white/90 text-foreground hover:bg-white">
+                        <Badge className="bg-card/90 text-foreground hover:bg-primary-foreground">
                           {route?.name}
                         </Badge>
                       </div>
@@ -243,7 +243,7 @@ function LandingPage() {
                 const route = mockRoutes.find((r) => r.id === trip.route_id)
                 const organizer = mockProfiles.find((p) => p.id === trip.organizer_id)
                 return (
-                  <Card key={trip.id} className="border-white/20 bg-white/90 shadow-sm">
+                  <Card key={trip.id} className="border-primary-foreground/20 bg-card/90 shadow-sm">
                     <CardContent className="flex flex-col gap-4 p-5">
                       <div className="flex items-start justify-between">
                         <div>
@@ -310,7 +310,7 @@ function LandingPage() {
                     key={route.id}
                     to="/route-guides/$routeId"
                     params={{ routeId: route.id }}
-                    className="group rounded-2xl border border-white/20 bg-white/90 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                    className="group rounded-2xl border border-primary-foreground/20 bg-card/90 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                   >
                     <div className="flex items-center gap-2">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -369,37 +369,37 @@ function LandingPage() {
             <div className="relative overflow-hidden rounded-3xl bg-primary p-8 sm:p-12 lg:p-16">
               <div className="relative z-10 flex flex-col items-start gap-6 lg:flex-row lg:items-center lg:justify-between">
                 <div className="">
-                  <h2 className="text-3xl font-bold text-white sm:text-4xl">
+                  <h2 className="text-3xl font-bold text-primary-foreground sm:text-4xl">
                     ¿Listo para tu próxima aventura?
                   </h2>
-                  <p className="mt-4 text-base leading-relaxed text-white/90">
+                  <p className="mt-4 text-base leading-relaxed text-primary-foreground/90">
                     Regístrate gratis y descubre rutas, organiza salidas y conecta con otros amantes de la montaña.
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <Button size="lg" className="bg-white text-primary hover:bg-white/90" asChild>
+                  <Button size="lg" className="bg-primary-foreground text-primary hover:bg-primary-foreground/90" asChild>
                     <Link to="/register">Empezar ahora</Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="border-white/30 bg-transparent text-white hover:bg-white/10" asChild>
+                  <Button size="lg" variant="outline" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10" asChild>
                     <Link to="/login">Iniciar sesión</Link>
                   </Button>
                 </div>
               </div>
-              <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10" />
-              <div className="absolute -bottom-20 -right-10 h-48 w-48 rounded-full bg-white/10" />
+              <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary-foreground/10" />
+              <div className="absolute -bottom-20 -right-10 h-48 w-48 rounded-full bg-primary-foreground/10" />
             </div>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="border-t border-white/10 bg-[#0a0e27]/80 py-10">
+        <footer className="border-t border-white/10 bg-background/80 py-10">
           <div className="mx-auto max-w-7xl px-4 lg:px-8">
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
               <div className="flex items-center gap-2">
                 <Mountain className="h-5 w-5 text-[#FDE68A]" />
-                <span className="font-bold text-white">MountainPlanner</span>
+                <span className="font-bold text-primary-foreground">MountainPlanner</span>
               </div>
-              <p className="text-sm text-white/60">
+              <p className="text-sm text-primary-foreground/60">
                 Hecho con pasión por la montaña · 2026
               </p>
             </div>
