@@ -67,11 +67,11 @@ async function seed() {
 
   // Update profiles with full info
   const profileUpdates = [
-    { id: carlosId, display_name: 'Carlos Montaña', avatar_url: 'https://i.pravatar.cc/150?u=user-1', phone: '+57 300 123 4567', neighborhood: 'Chapinero', lat: 4.6483, lng: -74.0628 },
-    { id: anaId, display_name: 'Ana Rios', avatar_url: 'https://i.pravatar.cc/150?u=user-2', phone: '+57 310 987 6543', neighborhood: 'Usaquén', lat: 4.7021, lng: -74.0308 },
-    { id: luisId, display_name: 'Luis Peña', avatar_url: 'https://i.pravatar.cc/150?u=user-3', phone: '+57 320 555 8888', neighborhood: 'Suba', lat: 4.7436, lng: -74.0827 },
-    { id: mariaId, display_name: 'María Torres', avatar_url: 'https://i.pravatar.cc/150?u=user-4', phone: '+57 315 444 2222', neighborhood: 'Teusaquillo', lat: 4.6243, lng: -74.0892 },
-    { id: diegoId, display_name: 'Diego Herrera', avatar_url: 'https://i.pravatar.cc/150?u=user-5', phone: '+57 317 777 3333', neighborhood: 'Envigado', lat: 6.1676, lng: -75.5838 },
+    { id: carlosId, display_name: 'Carlos Montaña', avatar_url: 'https://i.pravatar.cc/150?u=user-1', role: 'organizer', approval_status: 'approved', phone: '+57 300 123 4567', neighborhood: 'Chapinero', lat: 4.6483, lng: -74.0628 },
+    { id: anaId, display_name: 'Ana Rios', avatar_url: 'https://i.pravatar.cc/150?u=user-2', role: 'expedition_lead', approval_status: 'approved', phone: '+57 310 987 6543', neighborhood: 'Usaquén', lat: 4.7021, lng: -74.0308 },
+    { id: luisId, display_name: 'Luis Peña', avatar_url: 'https://i.pravatar.cc/150?u=user-3', role: 'participant', approval_status: 'approved', phone: '+57 320 555 8888', neighborhood: 'Suba', lat: 4.7436, lng: -74.0827 },
+    { id: mariaId, display_name: 'María Torres', avatar_url: 'https://i.pravatar.cc/150?u=user-4', role: 'participant', approval_status: 'approved', phone: '+57 315 444 2222', neighborhood: 'Teusaquillo', lat: 4.6243, lng: -74.0892 },
+    { id: diegoId, display_name: 'Diego Herrera', avatar_url: 'https://i.pravatar.cc/150?u=user-5', role: 'participant', approval_status: 'approved', phone: '+57 317 777 3333', neighborhood: 'Envigado', lat: 6.1676, lng: -75.5838 },
   ]
 
   for (const p of profileUpdates) {

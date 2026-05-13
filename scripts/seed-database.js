@@ -27,11 +27,11 @@ const admin = createClient(supabaseUrl, serviceRoleKey, {
 })
 
 const users = [
-  { email: 'carlos@example.com', password: 'password123', display_name: 'Carlos Montaña', role: 'organizer', neighborhood: 'Chapinero' },
-  { email: 'ana@example.com', password: 'password123', display_name: 'Ana Rios', role: 'guide', neighborhood: 'Usaquén' },
-  { email: 'luis@example.com', password: 'password123', display_name: 'Luis Peña', role: 'participant', neighborhood: 'Suba' },
-  { email: 'maria@example.com', password: 'password123', display_name: 'María Torres', role: 'participant', neighborhood: 'Teusaquillo' },
-  { email: 'diego@example.com', password: 'password123', display_name: 'Diego Herrera', role: 'participant', neighborhood: 'Envigado' },
+  { email: 'carlos@example.com', password: 'password123', display_name: 'Carlos Montaña', role: 'organizer', approval_status: 'approved', neighborhood: 'Chapinero' },
+  { email: 'ana@example.com', password: 'password123', display_name: 'Ana Rios', role: 'expedition_lead', approval_status: 'approved', neighborhood: 'Usaquén' },
+  { email: 'luis@example.com', password: 'password123', display_name: 'Luis Peña', role: 'participant', approval_status: 'approved', neighborhood: 'Suba' },
+  { email: 'maria@example.com', password: 'password123', display_name: 'María Torres', role: 'participant', approval_status: 'approved', neighborhood: 'Teusaquillo' },
+  { email: 'diego@example.com', password: 'password123', display_name: 'Diego Herrera', role: 'participant', approval_status: 'approved', neighborhood: 'Envigado' },
 ]
 
 async function seed() {
@@ -47,6 +47,7 @@ async function seed() {
       user_metadata: {
         display_name: u.display_name,
         role: u.role,
+        approval_status: u.approval_status,
       }
     })
     if (error) {
@@ -59,11 +60,12 @@ async function seed() {
 
   const profileIds = createdUsers.map(u => u.id)
 
-  // Update profiles with extra fields
+  // Update profiles with extra fields and correct approval status
   for (const u of createdUsers) {
     await admin.from('profiles').update({
       neighborhood: u.neighborhood,
       phone: '+57 300 000 0000',
+      approval_status: u.approval_status,
     }).eq('id', u.id)
   }
 
