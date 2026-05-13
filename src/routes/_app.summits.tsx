@@ -1,15 +1,51 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
-import { mockSummitLogs, mockTrips, mockRoutes, mockProfiles } from '#/lib/mock-data'
-import { Trophy, Calendar, TrendingUp, Layers } from 'lucide-react'
+import { supabase } from '#/lib/supabase'
+import { useAuth } from '#/contexts/AuthContext'
+import { useState, useEffect } from 'react'
+import { Trophy, Calendar, TrendingUp, Layers, Loader2 } from 'lucide-react'
+import type { Tables } from '#/types/database.types'
+
+type SummitLog = Tables<'summit_log'>
+type Route = Tables<'routes'>
+type Trip = Tables<'trips'>
 
 export const Route = createFileRoute('/_app/summits')({
   component: SummitsPage,
 })
 
 function SummitsPage() {
-  const profile = mockProfiles[0]
-  const logs = mockSummitLogs.filter((l) => l.profile_id === profile.id)
+  const { user } = useAuth()
+  const profileId = user?.profile?.id
+  const [logs, setLogs] = useState<SummitLog[]>([])
+  const [routes, setRoutes] = useState<Route[]>([])
+  const [trips, setTrips] = useState<Trip[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!profileId) { setLoading(false); return }
+      setLoading(true)
+      const [{ data: l }, { data: r }, { data: t }] = await Promise.all([
+        supabase.from('summit_log').select('*').eq('profile_id', profileId),
+        supabase.from('routes').select('*'),
+        supabase.from('trips').select('*'),
+      ])
+      setLogs(l || [])
+      setRoutes(r || [])
+      setTrips(t || [])
+      setLoading(false)
+    }
+    fetchData()
+  }, [profileId])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -34,8 +70,8 @@ function SummitsPage() {
             <div>
               <p className="text-lg font-bold">
                 {logs.reduce((acc, l) => {
-                  const route = mockRoutes.find((r) => r.id === l.route_id)
-                  return acc + (route?.gpx_parsed?.elevation_gain ?? 0)
+                  const route = routes.find((r) => r.id === l.route_id)
+                  return acc + ((route?.gpx_parsed as any)?.elevation_gain ?? 0)
                 }, 0)} m
               </p>
               <p className="text-xs text-muted-foreground">Desnivel acumulado</p>
@@ -48,8 +84,8 @@ function SummitsPage() {
             <div>
               <p className="text-lg font-bold">
                 {logs.reduce((acc, l) => {
-                  const route = mockRoutes.find((r) => r.id === l.route_id)
-                  return acc + (route?.gpx_parsed?.distance ?? 0)
+                  const route = routes.find((r) => r.id === l.route_id)
+                  return acc + ((route?.gpx_parsed as any)?.distance ?? 0)
                 }, 0)} km
               </p>
               <p className="text-xs text-muted-foreground">Distancia acumulada</p>
@@ -60,8 +96,8 @@ function SummitsPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {logs.map((log) => {
-          const trip = mockTrips.find((t) => t.id === log.trip_id)
-          const route = mockRoutes.find((r) => r.id === log.route_id)
+          const trip = trips.find((t) => t.id === log.trip_id)
+          const route = routes.find((r) => r.id === log.route_id)
           return (
             <Card key={log.id} className="border-border shadow-sm">
               <CardHeader className="pb-2">
@@ -77,8 +113,8 @@ function SummitsPage() {
                   <p className="text-sm italic text-muted-foreground">"{log.notes}"</p>
                 )}
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <span>{route?.gpx_parsed?.distance ?? 0} km</span>
-                  <span>{route?.gpx_parsed?.elevation_gain ?? 0} m+</span>
+                  <span>{(route?.gpx_parsed as any)?.distance ?? 0} km</span>
+                  <span>{(route?.gpx_parsed as any)?.elevation_gain ?? 0} m+</span>
                 </div>
               </CardContent>
             </Card>

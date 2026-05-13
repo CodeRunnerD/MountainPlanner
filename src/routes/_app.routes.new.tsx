@@ -1,26 +1,80 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { Textarea } from '#/components/ui/textarea'
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
-import { ArrowLeft, Plus, X, Upload } from 'lucide-react'
+import { supabase } from '#/lib/supabase'
+import { useAuth } from '#/contexts/AuthContext'
+import { getUserWithProfile } from '#/lib/session.functions'
+import { ArrowLeft, Plus, X, Upload, Loader2 } from 'lucide-react'
 import { useState } from 'react'
+import { useForm } from '@tanstack/react-form'
 
 export const Route = createFileRoute('/_app/routes/new')({
+  beforeLoad: async () => {
+    const data = await getUserWithProfile()
+    const role = data?.profile?.role
+    if (role !== 'organizer' && role !== 'expedition_lead') {
+      throw redirect({ to: '/routes' })
+    }
+  },
   component: NewRoutePage,
 })
 
 function NewRoutePage() {
-  const [skills, setSkills] = useState<string[]>([])
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const [newSkill, setNewSkill] = useState('')
 
+  const form = useForm({
+    defaultValues: {
+      name: '',
+      description: '',
+      sourceUrl: '',
+      skills: [] as string[],
+    },
+    onSubmit: async ({ value }) => {
+      const { data: route, error } = await supabase
+        .from('routes')
+        .insert({
+          name: value.name.trim(),
+          description: value.description.trim() || null,
+          source_url: value.sourceUrl.trim() || null,
+          created_by: user?.id,
+        })
+        .select()
+        .single()
+
+      if (error || !route) {
+        alert('Error al crear la ruta: ' + (error?.message ?? 'Desconocido'))
+        return
+      }
+
+      if (value.skills.length > 0) {
+        await supabase.from('route_skill_requirements').insert(
+          value.skills.map((skill) => ({ route_id: route.id, skill_tag: skill }))
+        )
+      }
+
+      navigate({ to: '/routes/$routeId', params: { routeId: route.id } })
+    },
+  })
+
   const addSkill = () => {
-    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
-      setSkills([...skills, newSkill.trim()])
-      setNewSkill('')
+    const trimmed = newSkill.trim()
+    if (!trimmed) return
+    const current = form.getFieldValue('skills') || []
+    if (!current.includes(trimmed)) {
+      form.setFieldValue('skills', [...current, trimmed])
     }
+    setNewSkill('')
+  }
+
+  const removeSkill = (skill: string) => {
+    const current = form.getFieldValue('skills') || []
+    form.setFieldValue('skills', current.filter((s) => s !== skill))
   }
 
   return (
@@ -36,28 +90,74 @@ function NewRoutePage() {
         <p className="text-muted-foreground">Registra una nueva ruta de montaña</p>
       </div>
 
-      <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+      <form
+        className="space-y-6"
+        onSubmit={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          form.handleSubmit()
+        }}
+      >
         <Card className="border-border shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg">Información básica</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre de la ruta</Label>
-              <Input id="name" placeholder="Ej: Cumbre del Nevado del Tolima" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Descripción</Label>
-              <Textarea
-                id="description"
-                placeholder="Describe la ruta, dificultad, paisajes..."
-                rows={4}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="source">URL fuente (Wikiloc u otro)</Label>
-              <Input id="source" placeholder="https://wikiloc.com/..." />
-            </div>
+            <form.Field
+              name="name"
+              validators={{
+                onSubmit: ({ value }) => (!value.trim() ? 'El nombre es requerido' : undefined),
+              }}
+              children={(field) => (
+                <div className="space-y-2">
+                  <Label htmlFor={field.name}>Nombre de la ruta</Label>
+                  <Input
+                    id={field.name}
+                    name={field.name}
+                    placeholder="Ej: Cumbre del Nevado del Tolima"
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <p className="text-xs text-destructive">{field.state.meta.errors[0]}</p>
+                  )}
+                </div>
+              )}
+            />
+            <form.Field
+              name="description"
+              children={(field) => (
+                <div className="space-y-2">
+                  <Label htmlFor={field.name}>Descripción</Label>
+                  <Textarea
+                    id={field.name}
+                    name={field.name}
+                    placeholder="Describe la ruta, dificultad, paisajes..."
+                    rows={4}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                </div>
+              )}
+            />
+            <form.Field
+              name="sourceUrl"
+              children={(field) => (
+                <div className="space-y-2">
+                  <Label htmlFor={field.name}>URL fuente (Wikiloc u otro)</Label>
+                  <Input
+                    id={field.name}
+                    name={field.name}
+                    placeholder="https://wikiloc.com/..."
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                  />
+                </div>
+              )}
+            />
           </CardContent>
         </Card>
 
@@ -70,7 +170,7 @@ function NewRoutePage() {
               <div className="text-center">
                 <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
                 <p className="mt-2 text-sm font-medium">Arrastra un archivo GPX o haz clic para subir</p>
-                <p className="text-xs text-muted-foreground">.gpx, .tcx</p>
+                <p className="text-xs text-muted-foreground">.gpx, .tcx (próximamente)</p>
               </div>
             </div>
           </CardContent>
@@ -93,12 +193,12 @@ function NewRoutePage() {
               </Button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {skills.map((skill) => (
+              {form.getFieldValue('skills')?.map((skill) => (
                 <Badge key={skill} variant="secondary" className="gap-1 pr-1">
                   {skill}
                   <button
                     type="button"
-                    onClick={() => setSkills(skills.filter((s) => s !== skill))}
+                    onClick={() => removeSkill(skill)}
                     className="ml-1 rounded-full p-0.5 hover:bg-muted"
                   >
                     <X className="h-3 w-3" />
@@ -113,7 +213,15 @@ function NewRoutePage() {
           <Button variant="outline" asChild>
             <Link to="/routes">Cancelar</Link>
           </Button>
-          <Button type="submit">Guardar ruta</Button>
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            children={([canSubmit, isSubmitting]) => (
+              <Button type="submit" disabled={!canSubmit || isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Guardar ruta
+              </Button>
+            )}
+          />
         </div>
       </form>
     </div>

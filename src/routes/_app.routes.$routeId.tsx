@@ -1,18 +1,10 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
-import { Input } from '#/components/ui/input'
-import { Label } from '#/components/ui/label'
-import { Textarea } from '#/components/ui/textarea'
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
-import { Separator } from '#/components/ui/separator'
-import {
-  mockRoutes,
-  mockRouteWaypoints,
-  mockRouteSkills,
-  mockProfiles,
-  mockTrips,
-} from '#/lib/mock-data'
+import { supabase } from '#/lib/supabase'
+import { useIsOrganizer } from './_app'
+import { useState, useEffect } from 'react'
 import {
   Map,
   ArrowLeft,
@@ -24,7 +16,15 @@ import {
   Flag,
   CircleDot,
   Star,
+  Loader2,
 } from 'lucide-react'
+import type { Tables } from '#/types/database.types'
+
+type Route = Tables<'routes'>
+type RouteWaypoint = Tables<'route_waypoints'>
+type RouteSkill = Tables<'route_skill_requirements'>
+type Profile = Tables<'profiles'>
+type Trip = Tables<'trips'>
 
 export const Route = createFileRoute('/_app/routes/$routeId')({
   component: RouteDetailPage,
@@ -32,11 +32,47 @@ export const Route = createFileRoute('/_app/routes/$routeId')({
 
 function RouteDetailPage() {
   const { routeId } = Route.useParams()
-  const route = mockRoutes.find((r) => r.id === routeId)
-  const waypoints = mockRouteWaypoints.filter((w) => w.route_id === routeId)
-  const skills = mockRouteSkills.filter((s) => s.route_id === routeId)
-  const creator = mockProfiles.find((p) => p.id === route?.created_by)
-  const tripsUsing = mockTrips.filter((t) => t.route_id === routeId)
+  const [route, setRoute] = useState<Route | null>(null)
+  const [waypoints, setWaypoints] = useState<RouteWaypoint[]>([])
+  const [skills, setSkills] = useState<RouteSkill[]>([])
+  const [creator, setCreator] = useState<Profile | null>(null)
+  const [tripsUsing, setTripsUsing] = useState<Trip[]>([])
+  const [loading, setLoading] = useState(true)
+  const isOrganizer = useIsOrganizer()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+      const { data: r } = await supabase.from('routes').select('*').eq('id', routeId).single()
+      if (!r) {
+        setLoading(false)
+        return
+      }
+      setRoute(r)
+
+      const [{ data: w }, { data: s }, { data: c }, { data: t }] = await Promise.all([
+        supabase.from('route_waypoints').select('*').eq('route_id', routeId),
+        supabase.from('route_skill_requirements').select('*').eq('route_id', routeId),
+        supabase.from('profiles').select('*').eq('id', r.created_by).single(),
+        supabase.from('trips').select('id, title, start_date').eq('route_id', routeId),
+      ])
+
+      setWaypoints(w || [])
+      setSkills(s || [])
+      setCreator(c)
+      setTripsUsing(t || [])
+      setLoading(false)
+    }
+    fetchData()
+  }, [routeId])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   if (!route) {
     return (
@@ -72,9 +108,11 @@ function RouteDetailPage() {
           <p className="text-muted-foreground mt-1">{route.description}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link to="/routes/$routeId/edit" params={{ routeId: route.id }}>Editar</Link>
-          </Button>
+          {isOrganizer && (
+            <Button variant="outline" asChild>
+              <Link to="/routes/$routeId/edit" params={{ routeId: route.id }}>Editar</Link>
+            </Button>
+          )}
           <Button asChild>
             <Link to="/trips/new" search={{ routeId: route.id }}>Crear salida</Link>
           </Button>
@@ -86,7 +124,7 @@ function RouteDetailPage() {
           <CardContent className="flex items-center gap-3 p-4">
             <TrendingUp className="h-5 w-5 text-primary" />
             <div>
-              <p className="text-lg font-bold text-foreground">{route.gpx_parsed?.distance ?? 0} km</p>
+              <p className="text-lg font-bold text-foreground">{(route.gpx_parsed as any)?.distance ?? 0} km</p>
               <p className="text-xs text-muted-foreground">Distancia</p>
             </div>
           </CardContent>
@@ -95,7 +133,7 @@ function RouteDetailPage() {
           <CardContent className="flex items-center gap-3 p-4">
             <Layers className="h-5 w-5 text-secondary" />
             <div>
-              <p className="text-lg font-bold text-foreground">{route.gpx_parsed?.elevation_gain ?? 0} m</p>
+              <p className="text-lg font-bold text-foreground">{(route.gpx_parsed as any)?.elevation_gain ?? 0} m</p>
               <p className="text-xs text-muted-foreground">Desnivel positivo</p>
             </div>
           </CardContent>

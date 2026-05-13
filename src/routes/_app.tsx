@@ -1,4 +1,4 @@
-import { Link, useLocation } from '@tanstack/react-router'
+import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import {
   Mountain,
@@ -10,10 +10,11 @@ import {
   X,
   LayoutDashboard,
   Trophy,
+  Loader2,
 } from 'lucide-react'
 import { Button } from '#/components/ui/button'
-import { useState } from 'react'
-import { mockProfiles } from '#/lib/mock-data'
+import { useState, useEffect } from 'react'
+import { useAuth } from '#/contexts/AuthContext'
 
 export const Route = createFileRoute('/_app')({
   component: AppLayout,
@@ -22,7 +23,37 @@ export const Route = createFileRoute('/_app')({
 function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const location = useLocation()
-  const currentUser = mockProfiles[0]
+  const navigate = useNavigate()
+  const { user, isLoading, signOut } = useAuth()
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      navigate({ to: '/login', search: { redirect: location.href } })
+    }
+  }, [isLoading, user, navigate, location.href])
+
+  const handleLogout = async () => {
+    await signOut()
+    window.location.href = '/login'
+  }
+
+  if (isLoading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    )
+  }
+
+  const profile = user?.profile
+  const displayName = profile?.display_name || user?.email || 'Usuario'
+  const avatarUrl = profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id}`
+  const role = profile?.role || 'participant'
+  const neighborhood = profile?.neighborhood
+  const isOrganizer = role === 'organizer' || role === 'expedition_lead'
 
   const navItems = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -81,16 +112,16 @@ function AppLayout() {
         <div className="border-t border-border p-4">
           <div className="flex items-center gap-3">
             <img
-              src={currentUser.avatar_url}
-              alt={currentUser.display_name}
+              src={avatarUrl}
+              alt={displayName}
               className="h-9 w-9 rounded-full object-cover ring-2 ring-primary/20"
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">
-                {currentUser.display_name}
+                {displayName}
               </p>
               <p className="text-xs text-muted-foreground capitalize">
-                {currentUser.role}
+                {role}
               </p>
             </div>
           </div>
@@ -98,6 +129,7 @@ function AppLayout() {
             variant="ghost"
             size="sm"
             className="mt-2 w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+            onClick={handleLogout}
           >
             <LogOut className="h-4 w-4" />
             Cerrar sesión
@@ -117,12 +149,14 @@ function AppLayout() {
           </Button>
           <div className="flex-1" />
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-muted-foreground sm:inline">
-              {currentUser.neighborhood}
-            </span>
+            {neighborhood && (
+              <span className="hidden text-sm text-muted-foreground sm:inline">
+                {neighborhood}
+              </span>
+            )}
             <img
-              src={currentUser.avatar_url}
-              alt={currentUser.display_name}
+              src={avatarUrl}
+              alt={displayName}
               className="h-8 w-8 rounded-full object-cover ring-2 ring-primary/20"
             />
           </div>
@@ -134,4 +168,10 @@ function AppLayout() {
       </div>
     </div>
   )
+}
+
+export function useIsOrganizer() {
+  const { user } = useAuth()
+  const role = user?.profile?.role
+  return role === 'organizer' || role === 'expedition_lead'
 }

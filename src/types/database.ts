@@ -1,4 +1,4 @@
-export type AppRole = 'organizer' | 'guide' | 'participant'
+export type AppRole = 'organizer' | 'expedition_lead' | 'participant'
 export type TripStatus = 'draft' | 'open' | 'closed' | 'completed' | 'cancelled'
 export type RegistrationStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled'
 export type EquipmentStatus = 'owned' | 'needs_rental'

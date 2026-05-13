@@ -3,9 +3,16 @@ import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
-import { mockRoutes, mockRouteWaypoints, mockRouteSkills, mockProfiles } from '#/lib/mock-data'
-import { Map, Search, Plus, ArrowRight, TrendingUp, Layers } from 'lucide-react'
-import { useState } from 'react'
+import { supabase } from '#/lib/supabase'
+import { useIsOrganizer } from './_app'
+import { Map, Search, Plus, ArrowRight, TrendingUp, Layers, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import type { Tables } from '#/types/database.types'
+
+type Route = Tables<'routes'>
+type RouteWaypoint = Tables<'route_waypoints'>
+type RouteSkill = Tables<'route_skill_requirements'>
+type Profile = Tables<'profiles'>
 
 export const Route = createFileRoute('/_app/routes')({
   component: RoutesListPage,
@@ -13,11 +20,43 @@ export const Route = createFileRoute('/_app/routes')({
 
 function RoutesListPage() {
   const [search, setSearch] = useState('')
+  const [routes, setRoutes] = useState<Route[]>([])
+  const [waypoints, setWaypoints] = useState<RouteWaypoint[]>([])
+  const [skills, setSkills] = useState<RouteSkill[]>([])
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [loading, setLoading] = useState(true)
+  const isOrganizer = useIsOrganizer()
 
-  const filtered = mockRoutes.filter((r) =>
-    r.name.toLowerCase().includes(search.toLowerCase()) ||
-    (r.description ?? '').toLowerCase().includes(search.toLowerCase())
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+      const [{ data: r }, { data: w }, { data: s }, { data: p }] = await Promise.all([
+        supabase.from('routes').select('*').order('created_at', { ascending: false }),
+        supabase.from('route_waypoints').select('*'),
+        supabase.from('route_skill_requirements').select('*'),
+        supabase.from('profiles').select('id, display_name'),
+      ])
+      setRoutes(r || [])
+      setWaypoints(w || [])
+      setSkills(s || [])
+      setProfiles(p || [])
+      setLoading(false)
+    }
+    fetchData()
+  }, [])
+
+  const filtered = routes.filter((route) =>
+    route.name.toLowerCase().includes(search.toLowerCase()) ||
+    (route.description ?? '').toLowerCase().includes(search.toLowerCase())
   )
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -26,12 +65,14 @@ function RoutesListPage() {
           <h1 className="text-3xl font-bold text-foreground">Rutas</h1>
           <p className="text-muted-foreground">Explora y gestiona rutas de montaña</p>
         </div>
-        <Button asChild>
-          <Link to="/routes/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Nueva ruta
-          </Link>
-        </Button>
+        {isOrganizer && (
+          <Button asChild>
+            <Link to="/routes/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Nueva ruta
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="relative">
@@ -46,9 +87,9 @@ function RoutesListPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((route) => {
-          const waypoints = mockRouteWaypoints.filter((w) => w.route_id === route.id)
-          const skills = mockRouteSkills.filter((s) => s.route_id === route.id)
-          const creator = mockProfiles.find((p) => p.id === route.created_by)
+          const routeWaypoints = waypoints.filter((w) => w.route_id === route.id)
+          const routeSkills = skills.filter((s) => s.route_id === route.id)
+          const creator = profiles.find((p) => p.id === route.created_by)
           return (
             <Card key={route.id} className="border-border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
               <CardHeader className="pb-3">
@@ -62,30 +103,30 @@ function RoutesListPage() {
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <TrendingUp className="h-3.5 w-3.5" />
-                    {route.gpx_parsed?.distance ?? 0} km
+                    {(route.gpx_parsed as any)?.distance ?? 0} km
                   </span>
                   <span className="flex items-center gap-1">
                     <Layers className="h-3.5 w-3.5" />
-                    {route.gpx_parsed?.elevation_gain ?? 0} m+
+                    {(route.gpx_parsed as any)?.elevation_gain ?? 0} m+
                   </span>
                 </div>
 
-                {skills.length > 0 && (
+                {routeSkills.length > 0 && (
                   <div className="flex flex-wrap gap-1">
-                    {skills.slice(0, 3).map((s) => (
+                    {routeSkills.slice(0, 3).map((s) => (
                       <Badge key={s.id} variant="secondary" className="text-xs">
                         {s.skill_tag}
                       </Badge>
                     ))}
-                    {skills.length > 3 && (
-                      <Badge variant="outline" className="text-xs">+{skills.length - 3}</Badge>
+                    {routeSkills.length > 3 && (
+                      <Badge variant="outline" className="text-xs">+{routeSkills.length - 3}</Badge>
                     )}
                   </div>
                 )}
 
                 <div className="flex items-center justify-between pt-1">
                   <span className="text-xs text-muted-foreground">
-                    {waypoints.length} waypoints · Por {creator?.display_name ?? 'Anónimo'}
+                    {routeWaypoints.length} waypoints · Por {creator?.display_name ?? 'Anónimo'}
                   </span>
                   <Button size="sm" variant="ghost" asChild className="gap-1">
                     <Link to="/routes/$routeId" params={{ routeId: route.id }}>

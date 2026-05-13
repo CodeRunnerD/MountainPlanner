@@ -7,13 +7,7 @@ import {
   DialogContent,
   DialogTitle,
 } from '#/components/ui/dialog'
-import {
-  mockTrips,
-  mockRoutes,
-  mockProfiles,
-  mockRouteWaypoints,
-  mockRouteSkills,
-} from '#/lib/mock-data'
+import { supabase } from '#/lib/supabase'
 import {
   Mountain,
   ArrowLeft,
@@ -30,8 +24,16 @@ import {
   Map,
   User,
   Clock,
+  Loader2,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import type { Tables } from '#/types/database.types'
+
+type Trip = Tables<'trips'>
+type Route = Tables<'routes'>
+type Profile = Tables<'profiles'>
+type RouteWaypoint = Tables<'route_waypoints'>
+type RouteSkill = Tables<'route_skill_requirements'>
 
 export const Route = createFileRoute('/expeditions/$tripId')({
   component: ExpeditionPage,
@@ -39,14 +41,41 @@ export const Route = createFileRoute('/expeditions/$tripId')({
 
 function ExpeditionPage() {
   const { tripId } = Route.useParams()
-  const trip = mockTrips.find((t) => t.id === tripId)
-  const route = mockRoutes.find((r) => r.id === trip?.route_id)
-  const organizer = mockProfiles.find((p) => p.id === trip?.organizer_id)
-  const waypoints = mockRouteWaypoints.filter((w) => w.route_id === route?.id)
-  const skills = mockRouteSkills.filter((s) => s.route_id === route?.id)
+  const [trip, setTrip] = useState<Trip | null>(null)
+  const [route, setRoute] = useState<Route | null>(null)
+  const [organizer, setOrganizer] = useState<Profile | null>(null)
+  const [waypoints, setWaypoints] = useState<RouteWaypoint[]>([])
+  const [skills, setSkills] = useState<RouteSkill[]>([])
+  const [loading, setLoading] = useState(true)
 
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [lightboxIndex, setLightboxIndex] = useState(0)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+      const { data: t } = await supabase.from('trips').select('*').eq('id', tripId).single()
+      if (!t) {
+        setLoading(false)
+        return
+      }
+      setTrip(t)
+
+      const [{ data: r }, { data: o }, { data: w }, { data: s }] = await Promise.all([
+        supabase.from('routes').select('*').eq('id', t.route_id).single(),
+        supabase.from('profiles').select('*').eq('id', t.organizer_id).single(),
+        supabase.from('route_waypoints').select('*').eq('route_id', t.route_id),
+        supabase.from('route_skill_requirements').select('*').eq('route_id', t.route_id),
+      ])
+
+      setRoute(r)
+      setOrganizer(o)
+      setWaypoints(w || [])
+      setSkills(s || [])
+      setLoading(false)
+    }
+    fetchData()
+  }, [tripId])
 
   const galleryImages = [
     trip?.cover_image,
@@ -72,6 +101,14 @@ function ExpeditionPage() {
       case 'end': return <Flag className="h-4 w-4 text-destructive" />
       default: return <CircleDot className="h-4 w-4 text-muted-foreground" />
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   if (!trip || !route) {
@@ -106,7 +143,7 @@ function ExpeditionPage() {
       </header>
 
       <div className="relative h-[50vh] min-h-[320px] w-full overflow-hidden">
-        <img src={trip.cover_image} alt={trip.title} className="h-full w-full object-cover" />
+        <img src={trip.cover_image ?? ''} alt={trip.title} className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-10">
           <div className="mx-auto max-w-4xl">
@@ -136,9 +173,11 @@ function ExpeditionPage() {
             <section>
               <h2 className="text-2xl font-bold text-foreground">La expedicion</h2>
               <div className="mt-4 space-y-4 text-muted-foreground leading-relaxed">
-                {storyParagraphs.map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
+                {storyParagraphs.length > 0 ? (
+                  storyParagraphs.map((p, i) => <p key={i}>{p}</p>)
+                ) : (
+                  <p>{trip.title}</p>
+                )}
               </div>
             </section>
 
@@ -173,12 +212,12 @@ function ExpeditionPage() {
                   <div className="grid gap-3 sm:grid-cols-3">
                     <div className="rounded-lg bg-muted/50 p-3 text-center">
                       <TrendingUp className="mx-auto h-5 w-5 text-primary" />
-                      <p className="mt-1 text-lg font-bold">{route.gpx_parsed?.distance ?? 0} km</p>
+                      <p className="mt-1 text-lg font-bold">{(route.gpx_parsed as any)?.distance ?? 0} km</p>
                       <p className="text-xs text-muted-foreground">Distancia</p>
                     </div>
                     <div className="rounded-lg bg-muted/50 p-3 text-center">
                       <Layers className="mx-auto h-5 w-5 text-secondary" />
-                      <p className="mt-1 text-lg font-bold">{route.gpx_parsed?.elevation_gain ?? 0} m</p>
+                      <p className="mt-1 text-lg font-bold">{(route.gpx_parsed as any)?.elevation_gain ?? 0} m</p>
                       <p className="text-xs text-muted-foreground">Desnivel +</p>
                     </div>
                     <div className="rounded-lg bg-muted/50 p-3 text-center">
@@ -256,7 +295,7 @@ function ExpeditionPage() {
                 <CardTitle className="text-lg">Organizador</CardTitle>
               </CardHeader>
               <CardContent className="flex items-center gap-3">
-                <img src={organizer?.avatar_url} alt={organizer?.display_name} className="h-12 w-12 rounded-full object-cover ring-2 ring-primary/20" />
+                <img src={organizer?.avatar_url ?? ''} alt={organizer?.display_name} className="h-12 w-12 rounded-full object-cover ring-2 ring-primary/20" />
                 <div>
                   <p className="font-medium">{organizer?.display_name}</p>
                   <p className="text-xs text-muted-foreground capitalize">{organizer?.role}</p>

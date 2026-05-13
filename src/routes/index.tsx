@@ -3,7 +3,8 @@ import { Button } from '#/components/ui/button'
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent } from '#/components/ui/card'
 import { ParallaxWrapper } from '#/components/parallax-hero'
-import { mockTrips, mockRoutes, mockProfiles } from '#/lib/mock-data'
+import { supabase } from '#/lib/supabase'
+import { useAuth } from '#/contexts/AuthContext'
 import {
   Mountain,
   Calendar,
@@ -16,16 +17,43 @@ import {
   Route as RouteIcon,
   Map,
 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import type { Tables } from '#/types/database.types'
+
+type Trip = Tables<'trips'>
+type RouteItem = Tables<'routes'>
+type Profile = Tables<'profiles'>
 
 export const Route = createFileRoute('/')({
   component: LandingPage,
 })
 
 function LandingPage() {
-  const completedTrips = mockTrips.filter((t) =>
+  const { user, isLoading: authLoading } = useAuth()
+  const [trips, setTrips] = useState<Trip[]>([])
+  const [routes, setRoutes] = useState<RouteItem[]>([])
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const [{ data: t }, { data: r }, { data: p }] = await Promise.all([
+        supabase.from('trips').select('*').order('start_date', { ascending: false }),
+        supabase.from('routes').select('*').order('created_at', { ascending: false }),
+        supabase.from('profiles').select('id, display_name, avatar_url'),
+      ])
+      setTrips(t || [])
+      setRoutes(r || [])
+      setProfiles(p || [])
+      setLoading(false)
+    }
+    fetchData()
+  }, [])
+
+  const completedTrips = trips.filter((t) =>
     ['completed', 'closed'].includes(t.status)
   )
-  const upcomingTrips = mockTrips.filter((t) =>
+  const upcomingTrips = trips.filter((t) =>
     ['open', 'draft'].includes(t.status)
   )
 
@@ -39,12 +67,38 @@ function LandingPage() {
             <span className="text-xl font-bold text-primary-foreground">MountainPlanner</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10" asChild>
-              <Link to="/login">Entrar</Link>
-            </Button>
-            <Button className="bg-primary-foreground text-background hover:bg-primary-foreground/90" asChild>
-              <Link to="/register">Crear cuenta</Link>
-            </Button>
+            {authLoading ? (
+              <div className="h-8 w-20 animate-pulse rounded bg-white/10" />
+            ) : user ? (
+              <Button
+                variant="ghost"
+                className="text-primary-foreground hover:bg-primary-foreground/10 gap-2"
+                asChild
+              >
+                <Link to="/dashboard">
+                  <img
+                    src={
+                      user.profile?.avatar_url ||
+                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`
+                    }
+                    alt=""
+                    className="h-6 w-6 rounded-full"
+                  />
+                  <span className="hidden sm:inline">
+                    {user.profile?.display_name || user.email}
+                  </span>
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10" asChild>
+                  <Link to="/login">Entrar</Link>
+                </Button>
+                <Button className="bg-primary-foreground text-background hover:bg-primary-foreground/90" asChild>
+                  <Link to="/register">Crear cuenta</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -164,8 +218,8 @@ function LandingPage() {
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {completedTrips.map((trip) => {
-                const route = mockRoutes.find((r) => r.id === trip.route_id)
-                const organizer = mockProfiles.find((p) => p.id === trip.organizer_id)
+                const route = routes.find((r) => r.id === trip.route_id)
+                const organizer = profiles.find((p) => p.id === trip.organizer_id)
                 return (
                   <Link
                     key={trip.id}
@@ -240,8 +294,8 @@ function LandingPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {upcomingTrips.map((trip) => {
-                const route = mockRoutes.find((r) => r.id === trip.route_id)
-                const organizer = mockProfiles.find((p) => p.id === trip.organizer_id)
+                const route = routes.find((r) => r.id === trip.route_id)
+                const organizer = profiles.find((p) => p.id === trip.organizer_id)
                 return (
                   <Card key={trip.id} className="border-primary-foreground/20 bg-card/90 shadow-sm">
                     <CardContent className="flex flex-col gap-4 p-5">
@@ -303,8 +357,8 @@ function LandingPage() {
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {mockRoutes.map((route) => {
-                const creator = mockProfiles.find((p) => p.id === route.created_by)
+              {routes.map((route) => {
+                const creator = profiles.find((p) => p.id === route.created_by)
                 return (
                   <Link
                     key={route.id}
@@ -348,7 +402,7 @@ function LandingPage() {
           <div className="mx-auto max-w-7xl px-4 lg:px-8">
             <div className="grid gap-8 text-center sm:grid-cols-3">
               <div>
-                <p className="text-3xl font-bold text-primary">{mockRoutes.length}</p>
+                <p className="text-3xl font-bold text-primary">{routes.length}</p>
                 <p className="text-sm text-muted-foreground">Rutas documentadas</p>
               </div>
               <div>
@@ -356,7 +410,7 @@ function LandingPage() {
                 <p className="text-sm text-muted-foreground">Expediciones realizadas</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-primary">{mockProfiles.length}</p>
+                <p className="text-3xl font-bold text-primary">{profiles.length}</p>
                 <p className="text-sm text-muted-foreground">Montañistas activos</p>
               </div>
             </div>

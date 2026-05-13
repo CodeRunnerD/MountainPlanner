@@ -4,16 +4,9 @@ import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar'
-import {
-  mockTrips,
-  mockRoutes,
-  mockProfiles,
-  mockTripParticipants,
-  mockTripEquipment,
-  mockParticipantEquipment,
-  mockVehicles,
-  mockTransportAssignments,
-} from '#/lib/mock-data'
+import { supabase } from '#/lib/supabase'
+import { useAuth, type AuthUser } from '#/contexts/AuthContext'
+import { useState, useEffect } from 'react'
 import {
   ArrowLeft,
   Calendar,
@@ -27,7 +20,18 @@ import {
   XCircle,
   HelpCircle,
   Wrench,
+  Loader2,
 } from 'lucide-react'
+import type { Tables } from '#/types/database.types'
+
+type Trip = Tables<'trips'>
+type Route = Tables<'routes'>
+type Profile = Tables<'profiles'>
+type TripParticipant = Tables<'trip_participants'>
+type EquipmentReq = Tables<'trip_equipment_requirements'>
+type ParticipantEquipment = Tables<'participant_equipment'>
+type Vehicle = Tables<'vehicles'>
+type TransportAssignment = Tables<'transport_assignments'>
 
 export const Route = createFileRoute('/_app/trips/$tripId')({
   component: TripDetailPage,
@@ -35,12 +39,72 @@ export const Route = createFileRoute('/_app/trips/$tripId')({
 
 function TripDetailPage() {
   const { tripId } = Route.useParams()
-  const trip = mockTrips.find((t) => t.id === tripId)
-  const route = mockRoutes.find((r) => r.id === trip?.route_id)
-  const organizer = mockProfiles.find((p) => p.id === trip?.organizer_id)
-  const participants = mockTripParticipants.filter((p) => p.trip_id === tripId)
-  const equipment = mockTripEquipment.filter((e) => e.trip_id === tripId)
-  const vehicles = mockVehicles.filter((v) => v.trip_id === tripId)
+  const { user } = useAuth()
+  const [trip, setTrip] = useState<Trip | null>(null)
+  const [route, setRoute] = useState<Route | null>(null)
+  const [organizer, setOrganizer] = useState<Profile | null>(null)
+  const [participants, setParticipants] = useState<TripParticipant[]>([])
+  const [participantProfiles, setParticipantProfiles] = useState<Record<string, Profile>>({})
+  const [equipment, setEquipment] = useState<EquipmentReq[]>([])
+  const [participantEquipment, setParticipantEquipment] = useState<ParticipantEquipment[]>([])
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [transportAssignments, setTransportAssignments] = useState<TransportAssignment[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+      const { data: t } = await supabase.from('trips').select('*').eq('id', tripId).single()
+      if (!t) {
+        setLoading(false)
+        return
+      }
+      setTrip(t)
+
+      const [{ data: r }, { data: o }, { data: p }, { data: e }, { data: v }, { data: ta }] = await Promise.all([
+        supabase.from('routes').select('*').eq('id', t.route_id).single(),
+        supabase.from('profiles').select('*').eq('id', t.organizer_id).single(),
+        supabase.from('trip_participants').select('*').eq('trip_id', tripId),
+        supabase.from('trip_equipment_requirements').select('*').eq('trip_id', tripId),
+        supabase.from('vehicles').select('*').eq('trip_id', tripId),
+        supabase.from('transport_assignments').select('*'),
+      ])
+
+      setRoute(r)
+      setOrganizer(o)
+      setParticipants(p || [])
+      setEquipment(e || [])
+      setVehicles(v || [])
+      setTransportAssignments(ta || [])
+
+      // Fetch participant profiles
+      if (p && p.length > 0) {
+        const profileIds = p.map((tp) => tp.profile_id)
+        const { data: profs } = await supabase.from('profiles').select('*').in('id', profileIds)
+        const profMap: Record<string, Profile> = {}
+        profs?.forEach((prof) => { profMap[prof.id] = prof })
+        setParticipantProfiles(profMap)
+      }
+
+      // Fetch participant equipment
+      if (p && p.length > 0 && e && e.length > 0) {
+        const participantIds = p.map((tp) => tp.id)
+        const { data: pe } = await supabase.from('participant_equipment').select('*').in('participant_id', participantIds)
+        setParticipantEquipment(pe || [])
+      }
+
+      setLoading(false)
+    }
+    fetchData()
+  }, [tripId])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
 
   if (!trip) {
     return (
@@ -71,10 +135,14 @@ function TripDetailPage() {
   }
 
   const assignedParticipantIds = new Set(
-    mockTransportAssignments
+    transportAssignments
       .filter((a) => vehicles.some((v) => v.id === a.vehicle_id))
       .map((a) => a.participant_id)
   )
+
+  const isOrganizer = user?.profile?.role === 'organizer' || user?.profile?.role === 'expedition_lead'
+  const isTripOrganizer = user?.id === trip.organizer_id
+  const canManage = isOrganizer || isTripOrganizer
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -97,9 +165,11 @@ function TripDetailPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link to="/trips/$tripId/edit" params={{ tripId }}>Editar</Link>
-          </Button>
+          {canManage && (
+            <Button variant="outline" asChild>
+              <Link to="/trips/$tripId/edit" params={{ tripId }}>Editar</Link>
+            </Button>
+          )}
           {trip.status === 'open' && (
             <Button asChild>
               <Link to="/trips/$tripId/register" params={{ tripId }}>Inscribirme</Link>
@@ -165,7 +235,7 @@ function TripDetailPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               {participants.map((p) => {
-                const profile = mockProfiles.find((pr) => pr.id === p.profile_id)
+                const profile = participantProfiles[p.profile_id]
                 return (
                   <div key={p.id} className="flex items-center gap-3 rounded-lg border border-border bg-card/50 p-3">
                     <Avatar className="h-9 w-9">
@@ -207,7 +277,7 @@ function TripDetailPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {equipment.map((eq) => {
-                const ownedCount = mockParticipantEquipment.filter(
+                const ownedCount = participantEquipment.filter(
                   (pe) => pe.equipment_id === eq.id && pe.status === 'owned'
                 ).length
                 return (
@@ -260,14 +330,13 @@ function TripDetailPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               {vehicles.map((v) => {
-                const owner = mockProfiles.find((p) => p.id === v.owner_id)
-                const assignments = mockTransportAssignments.filter((a) => a.vehicle_id === v.id)
-                const assignedProfiles = assignments.map((a) =>
-                  mockProfiles.find((p) => {
-                    const tp = mockTripParticipants.find((tp) => tp.id === a.participant_id)
-                    return tp?.profile_id === p.id
-                  })
-                ).filter(Boolean)
+                const owner = participantProfiles[v.owner_id]
+                const assignments = transportAssignments.filter((a) => a.vehicle_id === v.id)
+                const assignedProfiles = assignments.map((a) => {
+                  const tp = participants.find((p) => p.id === a.participant_id)
+                  return tp ? participantProfiles[tp.profile_id] : null
+                }).filter(Boolean)
+
                 return (
                   <div key={v.id} className="rounded-lg border border-border bg-card/50 p-4">
                     <div className="flex items-center justify-between">
@@ -301,7 +370,7 @@ function TripDetailPage() {
                             }`}
                             title={passenger?.display_name ?? 'Libre'}
                           >
-                            {passenger ? passenger.display_name[0] : ''}
+                            {passenger ? passenger.display_name?.[0] : ''}
                           </div>
                         )
                       })}
@@ -314,12 +383,14 @@ function TripDetailPage() {
               )}
             </CardContent>
           </Card>
-          <Button asChild>
-            <Link to="/trips/$tripId/transport" params={{ tripId }}>
-              <Car className="mr-2 h-4 w-4" />
-              Gestionar transporte
-            </Link>
-          </Button>
+          {canManage && (
+            <Button asChild>
+              <Link to="/trips/$tripId/transport" params={{ tripId }}>
+                <Car className="mr-2 h-4 w-4" />
+                Gestionar transporte
+              </Link>
+            </Button>
+          )}
         </TabsContent>
 
         <TabsContent value="route" className="space-y-4">
@@ -333,12 +404,12 @@ function TripDetailPage() {
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div className="rounded-lg bg-muted/50 p-3 text-center">
                     <TrendingUp className="mx-auto h-5 w-5 text-primary" />
-                    <p className="mt-1 text-lg font-bold">{route.gpx_parsed?.distance ?? 0} km</p>
+                    <p className="mt-1 text-lg font-bold">{(route.gpx_parsed as any)?.distance ?? 0} km</p>
                     <p className="text-xs text-muted-foreground">Distancia</p>
                   </div>
                   <div className="rounded-lg bg-muted/50 p-3 text-center">
                     <Layers className="mx-auto h-5 w-5 text-secondary" />
-                    <p className="mt-1 text-lg font-bold">{route.gpx_parsed?.elevation_gain ?? 0} m</p>
+                    <p className="mt-1 text-lg font-bold">{(route.gpx_parsed as any)?.elevation_gain ?? 0} m</p>
                     <p className="text-xs text-muted-foreground">Desnivel</p>
                   </div>
                   <div className="rounded-lg bg-muted/50 p-3 text-center">

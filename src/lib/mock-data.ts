@@ -29,7 +29,7 @@ export const mockProfiles: Profile[] = [
     id: 'user-2',
     display_name: 'Ana Rios',
     avatar_url: 'https://i.pravatar.cc/150?u=user-2',
-    role: 'guide',
+    role: 'expedition_lead',
     phone: '+57 310 987 6543',
     neighborhood: 'Usaquén',
     lat: 4.7021,

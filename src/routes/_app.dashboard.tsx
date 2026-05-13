@@ -2,12 +2,9 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Badge } from '#/components/ui/badge'
-import {
-  mockTrips,
-  mockRoutes,
-  mockProfiles,
-  mockTripParticipants,
-} from '#/lib/mock-data'
+import { supabase } from '#/lib/supabase'
+import { useIsOrganizer } from './_app'
+import { useState, useEffect } from 'react'
 import {
   Calendar,
   Map,
@@ -15,18 +12,46 @@ import {
   Mountain,
   ArrowRight,
   TrendingUp,
+  Loader2,
 } from 'lucide-react'
+import type { Tables } from '#/types/database.types'
+
+type Trip = Tables<'trips'>
+type Route = Tables<'routes'>
+type TripParticipant = Tables<'trip_participants'>
 
 export const Route = createFileRoute('/_app/dashboard')({
   component: DashboardPage,
 })
 
 function DashboardPage() {
-  const upcomingTrips = mockTrips.filter((t) =>
+  const [trips, setTrips] = useState<Trip[]>([])
+  const [routes, setRoutes] = useState<Route[]>([])
+  const [participants, setParticipants] = useState<TripParticipant[]>([])
+  const [loading, setLoading] = useState(true)
+  const isOrganizer = useIsOrganizer()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+      const [{ data: t }, { data: r }, { data: p }] = await Promise.all([
+        supabase.from('trips').select('*').order('start_date', { ascending: true }),
+        supabase.from('routes').select('*').order('created_at', { ascending: false }).limit(4),
+        supabase.from('trip_participants').select('*'),
+      ])
+      setTrips(t || [])
+      setRoutes(r || [])
+      setParticipants(p || [])
+      setLoading(false)
+    }
+    fetchData()
+  }, [])
+
+  const upcomingTrips = trips.filter((t) =>
     ['draft', 'open'].includes(t.status)
   )
-  const totalRoutes = mockRoutes.length
-  const totalParticipants = mockTripParticipants.length
+  const totalRoutes = routes.length
+  const totalParticipants = participants.length
 
   const stats = [
     {
@@ -52,6 +77,14 @@ function DashboardPage() {
     },
   ]
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -59,12 +92,14 @@ function DashboardPage() {
           <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground">Resumen de actividad</p>
         </div>
-        <Button asChild>
-          <Link to="/trips/new">
-            <Mountain className="mr-2 h-4 w-4" />
-            Nueva salida
-          </Link>
-        </Button>
+        {isOrganizer && (
+          <Button asChild>
+            <Link to="/trips/new">
+              <Mountain className="mr-2 h-4 w-4" />
+              Nueva salida
+            </Link>
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -98,8 +133,8 @@ function DashboardPage() {
               <p className="text-sm text-muted-foreground">No hay salidas programadas</p>
             ) : (
               upcomingTrips.map((trip) => {
-                const route = mockRoutes.find((r) => r.id === trip.route_id)
-                const participantCount = mockTripParticipants.filter(
+                const route = routes.find((r) => r.id === trip.route_id)
+                const participantCount = participants.filter(
                   (p) => p.trip_id === trip.id
                 ).length
                 return (
@@ -143,7 +178,7 @@ function DashboardPage() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-3">
-            {mockRoutes.slice(0, 4).map((route) => (
+            {routes.map((route) => (
               <Link
                 key={route.id}
                 to="/routes/$routeId"
@@ -153,7 +188,7 @@ function DashboardPage() {
                 <div className="min-w-0">
                   <p className="font-medium text-foreground truncate">{route.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {route.gpx_parsed?.distance ?? 0} km · {route.gpx_parsed?.elevation_gain ?? 0} m+
+                    {(route.gpx_parsed as any)?.distance ?? 0} km · {(route.gpx_parsed as any)?.elevation_gain ?? 0} m+
                   </p>
                 </div>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
