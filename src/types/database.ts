@@ -1,4 +1,5 @@
 export type AppRole = 'organizer' | 'expedition_lead' | 'participant'
+export type UserApprovalStatus = 'pending_email' | 'pending_approval' | 'approved' | 'rejected'
 export type TripStatus = 'draft' | 'open' | 'closed' | 'completed' | 'cancelled'
 export type RegistrationStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled'
 export type EquipmentStatus = 'owned' | 'needs_rental'
@@ -11,6 +12,7 @@ export interface Profile {
   display_name: string
   avatar_url?: string
   role: AppRole
+  approval_status: UserApprovalStatus
   phone?: string
   neighborhood?: string
   lat?: number

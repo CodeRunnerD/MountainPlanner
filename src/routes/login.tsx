@@ -20,12 +20,30 @@ function LoginPage() {
   const [formError, setFormError] = useState('')
 
   useEffect(() => {
-    if (user) {
-      if (redirect && redirect.startsWith('/')) {
-        navigate({ href: redirect })
-      } else {
-        navigate({ to: '/dashboard' })
-      }
+    if (!user) return
+
+    // Check email confirmation
+    if (!user.email_confirmed_at) {
+      navigate({ to: '/verify-email' })
+      return
+    }
+
+    // Check approval status
+    const approval = user.profile?.approval_status
+    if (approval === 'pending_approval') {
+      navigate({ to: '/waiting-approval' })
+      return
+    }
+    if (approval === 'rejected') {
+      navigate({ to: '/waiting-approval' })
+      return
+    }
+
+    // Approved and email confirmed
+    if (redirect && redirect.startsWith('/')) {
+      navigate({ href: redirect })
+    } else {
+      navigate({ to: '/dashboard' })
     }
   }, [user, navigate, redirect])
 

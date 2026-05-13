@@ -4,7 +4,7 @@
 
 -- ─── ENUMS ───────────────────────────────────────────────────────────
 
-CREATE TYPE app_role AS ENUM ('organizer', 'guide', 'participant');
+CREATE TYPE app_role AS ENUM ('organizer', 'expedition_lead', 'participant');
 CREATE TYPE trip_status AS ENUM ('draft', 'open', 'closed', 'completed', 'cancelled');
 CREATE TYPE registration_status AS ENUM ('pending', 'confirmed', 'rejected', 'cancelled');
 CREATE TYPE equipment_status AS ENUM ('owned', 'needs_rental');

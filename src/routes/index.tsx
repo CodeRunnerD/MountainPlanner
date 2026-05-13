@@ -40,7 +40,7 @@ function LandingPage() {
       const [{ data: t }, { data: r }, { data: p }] = await Promise.all([
         supabase.from('trips').select('*').order('start_date', { ascending: false }),
         supabase.from('routes').select('*').order('created_at', { ascending: false }),
-        supabase.from('profiles').select('id, display_name, avatar_url'),
+        supabase.from('profiles').select('*'),
       ])
       setTrips(t || [])
       setRoutes(r || [])

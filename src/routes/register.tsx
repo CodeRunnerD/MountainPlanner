@@ -1,10 +1,10 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { Mountain, ArrowRight, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '#/contexts/AuthContext'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useForm } from '@tanstack/react-form'
 
 export const Route = createFileRoute('/register')({
@@ -12,16 +12,9 @@ export const Route = createFileRoute('/register')({
 })
 
 function RegisterPage() {
-  const navigate = useNavigate()
-  const { user, signUp } = useAuth()
+  const { signUp } = useAuth()
   const [formError, setFormError] = useState('')
   const [success, setSuccess] = useState(false)
-
-  useEffect(() => {
-    if (user) {
-      navigate({ to: '/dashboard' })
-    }
-  }, [user, navigate])
 
   const form = useForm({
     defaultValues: {
@@ -64,10 +57,10 @@ function RegisterPage() {
             <CheckCircle2 className="mx-auto h-12 w-12 text-green-500 mb-4" />
             <h2 className="text-xl font-bold text-foreground">¡Cuenta creada!</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Tu cuenta ha sido creada exitosamente. Ya puedes iniciar sesión.
+              Te enviamos un correo de verificación. Revisa tu bandeja de entrada y confirma tu email para continuar.
             </p>
             <Button className="mt-4 w-full" asChild>
-              <Link to="/login">Iniciar sesión</Link>
+              <Link to="/login">Ir al inicio de sesión</Link>
             </Button>
           </div>
         </div>

@@ -17,6 +17,7 @@ interface AuthContextValue {
   signUp: (email: string, password: string, metadata: { display_name: string }) => Promise<{ error: Error | null }>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<{ error: Error | null }>
+  resendConfirmation: (email: string) => Promise<{ error: Error | null }>
   refreshProfile: () => Promise<void>
 }
 
@@ -116,6 +117,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error }
   }
 
+  const resendConfirmation = async (email: string) => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+    })
+    return { error }
+  }
+
   const refreshProfile = async () => {
     if (!user?.id) return
     const profile = await fetchProfile(user.id)
@@ -124,7 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, session, isLoading, signIn, signUp, signOut, resetPassword, refreshProfile }}
+      value={{ user, session, isLoading, signIn, signUp, signOut, resetPassword, resendConfirmation, refreshProfile }}
     >
       {children}
     </AuthContext.Provider>

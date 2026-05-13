@@ -155,6 +155,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: Database["public"]["Enums"]["user_approval_status"]
           avatar_url: string | null
           created_at: string
           display_name: string
@@ -166,6 +167,7 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }
         Insert: {
+          approval_status?: Database["public"]["Enums"]["user_approval_status"]
           avatar_url?: string | null
           created_at?: string
           display_name?: string
@@ -177,6 +179,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
         }
         Update: {
+          approval_status?: Database["public"]["Enums"]["user_approval_status"]
           avatar_url?: string | null
           created_at?: string
           display_name?: string
@@ -643,6 +646,11 @@ export type Database = {
       registration_status: "pending" | "confirmed" | "rejected" | "cancelled"
       trip_pace: "slow" | "medium" | "sport"
       trip_status: "draft" | "open" | "closed" | "completed" | "cancelled"
+      user_approval_status:
+        | "pending_email"
+        | "pending_approval"
+        | "approved"
+        | "rejected"
       waypoint_type: "start" | "waypoint" | "summit" | "end"
     }
     CompositeTypes: {
@@ -781,6 +789,12 @@ export const Constants = {
       registration_status: ["pending", "confirmed", "rejected", "cancelled"],
       trip_pace: ["slow", "medium", "sport"],
       trip_status: ["draft", "open", "closed", "completed", "cancelled"],
+      user_approval_status: [
+        "pending_email",
+        "pending_approval",
+        "approved",
+        "rejected",
+      ],
       waypoint_type: ["start", "waypoint", "summit", "end"],
     },
   },

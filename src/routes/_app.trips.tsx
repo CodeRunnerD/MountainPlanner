@@ -43,7 +43,7 @@ function TripsListPage() {
       const [{ data: t }, { data: r }, { data: p }, { data: tp }] = await Promise.all([
         supabase.from('trips').select('*').order('start_date', { ascending: true }),
         supabase.from('routes').select('id, name'),
-        supabase.from('profiles').select('id, display_name'),
+        supabase.from('profiles').select('*'),
         supabase.from('trip_participants').select('*'),
       ])
       setTrips(t || [])

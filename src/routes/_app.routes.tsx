@@ -34,7 +34,7 @@ function RoutesListPage() {
         supabase.from('routes').select('*').order('created_at', { ascending: false }),
         supabase.from('route_waypoints').select('*'),
         supabase.from('route_skill_requirements').select('*'),
-        supabase.from('profiles').select('id, display_name'),
+        supabase.from('profiles').select('*'),
       ])
       setRoutes(r || [])
       setWaypoints(w || [])

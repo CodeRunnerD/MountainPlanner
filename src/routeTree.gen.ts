@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WaitingApprovalRouteImport } from './routes/waiting-approval'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -25,11 +27,22 @@ import { Route as AppTripsNewRouteImport } from './routes/_app.trips.new'
 import { Route as AppTripsTripIdRouteImport } from './routes/_app.trips.$tripId'
 import { Route as AppRoutesNewRouteImport } from './routes/_app.routes.new'
 import { Route as AppRoutesRouteIdRouteImport } from './routes/_app.routes.$routeId'
+import { Route as AppAdminUsersRouteImport } from './routes/_app.admin.users'
 import { Route as AppTripsTripIdTransportRouteImport } from './routes/_app.trips.$tripId.transport'
 import { Route as AppTripsTripIdRegisterRouteImport } from './routes/_app.trips.$tripId.register'
 import { Route as AppTripsTripIdEditRouteImport } from './routes/_app.trips.$tripId.edit'
 import { Route as AppRoutesRouteIdEditRouteImport } from './routes/_app.routes.$routeId.edit'
 
+const WaitingApprovalRoute = WaitingApprovalRouteImport.update({
+  id: '/waiting-approval',
+  path: '/waiting-approval',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
@@ -109,6 +122,11 @@ const AppRoutesRouteIdRoute = AppRoutesRouteIdRouteImport.update({
   path: '/$routeId',
   getParentRoute: () => AppRoutesRoute,
 } as any)
+const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppTripsTripIdTransportRoute = AppTripsTripIdTransportRouteImport.update({
   id: '/transport',
   path: '/transport',
@@ -135,6 +153,8 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/waiting-approval': typeof WaitingApprovalRoute
   '/dashboard': typeof AppDashboardRoute
   '/profile': typeof AppProfileRoute
   '/routes': typeof AppRoutesRouteWithChildren
@@ -142,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/trips': typeof AppTripsRouteWithChildren
   '/expeditions/$tripId': typeof ExpeditionsTripIdRoute
   '/route-guides/$routeId': typeof RouteGuidesRouteIdRoute
+  '/admin/users': typeof AppAdminUsersRoute
   '/routes/$routeId': typeof AppRoutesRouteIdRouteWithChildren
   '/routes/new': typeof AppRoutesNewRoute
   '/trips/$tripId': typeof AppTripsTripIdRouteWithChildren
@@ -156,6 +177,8 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/waiting-approval': typeof WaitingApprovalRoute
   '/dashboard': typeof AppDashboardRoute
   '/profile': typeof AppProfileRoute
   '/routes': typeof AppRoutesRouteWithChildren
@@ -163,6 +186,7 @@ export interface FileRoutesByTo {
   '/trips': typeof AppTripsRouteWithChildren
   '/expeditions/$tripId': typeof ExpeditionsTripIdRoute
   '/route-guides/$routeId': typeof RouteGuidesRouteIdRoute
+  '/admin/users': typeof AppAdminUsersRoute
   '/routes/$routeId': typeof AppRoutesRouteIdRouteWithChildren
   '/routes/new': typeof AppRoutesNewRoute
   '/trips/$tripId': typeof AppTripsTripIdRouteWithChildren
@@ -179,6 +203,8 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/verify-email': typeof VerifyEmailRoute
+  '/waiting-approval': typeof WaitingApprovalRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/routes': typeof AppRoutesRouteWithChildren
@@ -186,6 +212,7 @@ export interface FileRoutesById {
   '/_app/trips': typeof AppTripsRouteWithChildren
   '/expeditions/$tripId': typeof ExpeditionsTripIdRoute
   '/route-guides/$routeId': typeof RouteGuidesRouteIdRoute
+  '/_app/admin/users': typeof AppAdminUsersRoute
   '/_app/routes/$routeId': typeof AppRoutesRouteIdRouteWithChildren
   '/_app/routes/new': typeof AppRoutesNewRoute
   '/_app/trips/$tripId': typeof AppTripsTripIdRouteWithChildren
@@ -202,6 +229,8 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/register'
+    | '/verify-email'
+    | '/waiting-approval'
     | '/dashboard'
     | '/profile'
     | '/routes'
@@ -209,6 +238,7 @@ export interface FileRouteTypes {
     | '/trips'
     | '/expeditions/$tripId'
     | '/route-guides/$routeId'
+    | '/admin/users'
     | '/routes/$routeId'
     | '/routes/new'
     | '/trips/$tripId'
@@ -223,6 +253,8 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/register'
+    | '/verify-email'
+    | '/waiting-approval'
     | '/dashboard'
     | '/profile'
     | '/routes'
@@ -230,6 +262,7 @@ export interface FileRouteTypes {
     | '/trips'
     | '/expeditions/$tripId'
     | '/route-guides/$routeId'
+    | '/admin/users'
     | '/routes/$routeId'
     | '/routes/new'
     | '/trips/$tripId'
@@ -245,6 +278,8 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/register'
+    | '/verify-email'
+    | '/waiting-approval'
     | '/_app/dashboard'
     | '/_app/profile'
     | '/_app/routes'
@@ -252,6 +287,7 @@ export interface FileRouteTypes {
     | '/_app/trips'
     | '/expeditions/$tripId'
     | '/route-guides/$routeId'
+    | '/_app/admin/users'
     | '/_app/routes/$routeId'
     | '/_app/routes/new'
     | '/_app/trips/$tripId'
@@ -268,12 +304,28 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
+  WaitingApprovalRoute: typeof WaitingApprovalRoute
   ExpeditionsTripIdRoute: typeof ExpeditionsTripIdRoute
   RouteGuidesRouteIdRoute: typeof RouteGuidesRouteIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/waiting-approval': {
+      id: '/waiting-approval'
+      path: '/waiting-approval'
+      fullPath: '/waiting-approval'
+      preLoaderRoute: typeof WaitingApprovalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
       id: '/register'
       path: '/register'
@@ -386,6 +438,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRoutesRouteIdRouteImport
       parentRoute: typeof AppRoutesRoute
     }
+    '/_app/admin/users': {
+      id: '/_app/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AppAdminUsersRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/trips/$tripId/transport': {
       id: '/_app/trips/$tripId/transport'
       path: '/transport'
@@ -478,6 +537,7 @@ interface AppRouteChildren {
   AppRoutesRoute: typeof AppRoutesRouteWithChildren
   AppSummitsRoute: typeof AppSummitsRoute
   AppTripsRoute: typeof AppTripsRouteWithChildren
+  AppAdminUsersRoute: typeof AppAdminUsersRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -486,6 +546,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppRoutesRoute: AppRoutesRouteWithChildren,
   AppSummitsRoute: AppSummitsRoute,
   AppTripsRoute: AppTripsRouteWithChildren,
+  AppAdminUsersRoute: AppAdminUsersRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -496,6 +557,8 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
+  WaitingApprovalRoute: WaitingApprovalRoute,
   ExpeditionsTripIdRoute: ExpeditionsTripIdRoute,
   RouteGuidesRouteIdRoute: RouteGuidesRouteIdRoute,
 }

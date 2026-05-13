@@ -10,6 +10,7 @@ import {
   X,
   LayoutDashboard,
   Trophy,
+  Shield,
   Loader2,
 } from 'lucide-react'
 import { Button } from '#/components/ui/button'
@@ -27,8 +28,21 @@ function AppLayout() {
   const { user, isLoading, signOut } = useAuth()
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (isLoading) return
+    if (!user) {
       navigate({ to: '/login', search: { redirect: location.href } })
+      return
+    }
+    // Check email confirmation
+    if (!user.email_confirmed_at) {
+      navigate({ to: '/verify-email' })
+      return
+    }
+    // Check approval status
+    const approval = user.profile?.approval_status
+    if (approval === 'pending_approval' || approval === 'rejected') {
+      navigate({ to: '/waiting-approval' })
+      return
     }
   }, [isLoading, user, navigate, location.href])
 
@@ -61,6 +75,7 @@ function AppLayout() {
     { to: '/trips', icon: Calendar, label: 'Salidas' },
     { to: '/summits', icon: Trophy, label: 'Cumbres' },
     { to: '/profile', icon: User, label: 'Perfil' },
+    ...(isOrganizer ? [{ to: '/admin/users', icon: Shield, label: 'Usuarios' } as const] : []),
   ]
 
   return (

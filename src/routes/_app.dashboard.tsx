@@ -12,6 +12,7 @@ import {
   Mountain,
   ArrowRight,
   TrendingUp,
+  Shield,
   Loader2,
 } from 'lucide-react'
 import type { Tables } from '#/types/database.types'
@@ -24,34 +25,44 @@ export const Route = createFileRoute('/_app/dashboard')({
   component: DashboardPage,
 })
 
+type AppProfile = Tables<'profiles'>
+
 function DashboardPage() {
   const [trips, setTrips] = useState<Trip[]>([])
   const [routes, setRoutes] = useState<Route[]>([])
   const [participants, setParticipants] = useState<TripParticipant[]>([])
+  const [profiles, setProfiles] = useState<AppProfile[]>([])
   const [loading, setLoading] = useState(true)
   const isOrganizer = useIsOrganizer()
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
-      const [{ data: t }, { data: r }, { data: p }] = await Promise.all([
+      const requests: any[] = [
         supabase.from('trips').select('*').order('start_date', { ascending: true }),
         supabase.from('routes').select('*').order('created_at', { ascending: false }).limit(4),
         supabase.from('trip_participants').select('*'),
-      ])
-      setTrips(t || [])
-      setRoutes(r || [])
-      setParticipants(p || [])
+      ]
+      if (isOrganizer) {
+        requests.push(supabase.from('profiles').select('*'))
+      }
+      const [t, r, p, prof] = await Promise.all(requests)
+      setTrips(t.data || [])
+      setRoutes(r.data || [])
+      setParticipants(p.data || [])
+      if (prof) setProfiles(prof.data || [])
       setLoading(false)
     }
     fetchData()
-  }, [])
+  }, [isOrganizer])
 
   const upcomingTrips = trips.filter((t) =>
     ['draft', 'open'].includes(t.status)
   )
   const totalRoutes = routes.length
   const totalParticipants = participants.length
+
+  const pendingUsers = profiles.filter((p) => p.approval_status === 'pending_approval').length
 
   const stats = [
     {
@@ -75,6 +86,17 @@ function DashboardPage() {
       color: 'text-accent',
       bg: 'bg-accent/10',
     },
+    ...(isOrganizer
+      ? [
+          {
+            label: 'Usuarios pendientes',
+            value: pendingUsers,
+            icon: Shield,
+            color: 'text-blue-600' as const,
+            bg: 'bg-blue-100' as const,
+          },
+        ]
+      : []),
   ]
 
   if (loading) {
@@ -117,6 +139,29 @@ function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      {isOrganizer && pendingUsers > 0 && (
+        <Card className="border-border shadow-sm border-l-4 border-l-blue-500">
+          <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-blue-100 p-2">
+                <Shield className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">
+                  {pendingUsers} usuario{pendingUsers > 1 ? 's' : ''} pendiente{pendingUsers > 1 ? 's' : ''} de aprobación
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Revisa las solicitudes de acceso y aprueba o rechaza usuarios.
+                </p>
+              </div>
+            </div>
+            <Button size="sm" asChild>
+              <Link to="/admin/users">Ver solicitudes</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="border-border shadow-sm">
