@@ -3,6 +3,14 @@ import { Button } from '#/components/ui/button'
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent } from '#/components/ui/card'
 import { Input } from '#/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '#/components/ui/dialog'
 import { supabase } from '#/lib/supabase'
 import { useAuth } from '#/contexts/AuthContext'
 import { useState, useEffect } from 'react'
@@ -15,6 +23,7 @@ import {
   Loader2,
   ArrowLeft,
   Shield,
+  AlertTriangle,
 } from 'lucide-react'
 import type { Tables } from '#/types/database.types'
 
@@ -25,12 +34,17 @@ export const Route = createFileRoute('/_app/admin/users')({
 })
 
 function AdminUsersPage() {
-  useAuth()
+  const { user } = useAuth()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null)
+  const [pendingAction, setPendingAction] = useState<'approve' | 'reject' | null>(null)
 
   const fetchProfiles = async () => {
     setLoading(true)
@@ -43,18 +57,22 @@ function AdminUsersPage() {
     fetchProfiles()
   }, [])
 
-  const handleApprove = async (profileId: string) => {
-    setActionLoading(profileId)
-    await supabase.from('profiles').update({ approval_status: 'approved' }).eq('id', profileId)
-    await fetchProfiles()
-    setActionLoading(null)
+  const openConfirmModal = (profile: Profile, action: 'approve' | 'reject') => {
+    setSelectedProfile(profile)
+    setPendingAction(action)
+    setModalOpen(true)
   }
 
-  const handleReject = async (profileId: string) => {
-    setActionLoading(profileId)
-    await supabase.from('profiles').update({ approval_status: 'rejected' }).eq('id', profileId)
+  const executeAction = async () => {
+    if (!selectedProfile || !pendingAction) return
+    setActionLoading(selectedProfile.id)
+    const newStatus = pendingAction === 'approve' ? 'approved' : 'rejected'
+    await supabase.from('profiles').update({ approval_status: newStatus }).eq('id', selectedProfile.id)
     await fetchProfiles()
     setActionLoading(null)
+    setModalOpen(false)
+    setSelectedProfile(null)
+    setPendingAction(null)
   }
 
   const statusConfig: Record<string, { label: string; className: string }> = {
@@ -74,6 +92,15 @@ function AdminUsersPage() {
 
   const pendingCount = profiles.filter((p) => p.approval_status === 'pending_approval').length
 
+  // Helper to check if current user can manage this profile
+  const canManage = (profile: Profile) => {
+    // Can't manage yourself
+    if (profile.id === user?.id) return false
+    // Can't manage other organizers or expedition_leads
+    if (profile.role === 'organizer' || profile.role === 'expedition_lead') return false
+    return true
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -84,6 +111,36 @@ function AdminUsersPage() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Confirmation Modal */}
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              {pendingAction === 'approve' ? 'Confirmar aprobación' : 'Confirmar rechazo'}
+            </DialogTitle>
+            <DialogDescription>
+              {pendingAction === 'approve'
+                ? `¿Estás seguro de que quieres aprobar a ${selectedProfile?.display_name}? Podrá acceder a la plataforma.`
+                : `¿Estás seguro de que quieres rechazar a ${selectedProfile?.display_name}? No podrá acceder a la plataforma.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant={pendingAction === 'approve' ? 'default' : 'destructive'}
+              onClick={executeAction}
+              disabled={actionLoading === selectedProfile?.id}
+            >
+              {actionLoading === selectedProfile?.id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {pendingAction === 'approve' ? 'Aprobar' : 'Rechazar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Button variant="ghost" size="sm" asChild className="gap-1">
         <Link to="/dashboard">
           <ArrowLeft className="h-4 w-4" /> Volver al dashboard
@@ -174,6 +231,9 @@ function AdminUsersPage() {
                   <Badge variant="outline" className="text-xs capitalize">
                     {profile.role}
                   </Badge>
+                  {profile.id === user?.id && (
+                    <Badge variant="secondary" className="text-xs">Tú</Badge>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {profile.phone || 'Sin teléfono'} · {profile.neighborhood || 'Sin barrio'} ·{' '}
@@ -182,13 +242,13 @@ function AdminUsersPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                {profile.approval_status === 'pending_approval' && (
+                {canManage(profile) && profile.approval_status === 'pending_approval' && (
                   <>
                     <Button
                       size="sm"
                       variant="outline"
                       className="gap-1 text-green-600 border-green-200 hover:bg-green-50"
-                      onClick={() => handleApprove(profile.id)}
+                      onClick={() => openConfirmModal(profile, 'approve')}
                       disabled={actionLoading === profile.id}
                     >
                       {actionLoading === profile.id ? (
@@ -202,7 +262,7 @@ function AdminUsersPage() {
                       size="sm"
                       variant="outline"
                       className="gap-1 text-red-600 border-red-200 hover:bg-red-50"
-                      onClick={() => handleReject(profile.id)}
+                      onClick={() => openConfirmModal(profile, 'reject')}
                       disabled={actionLoading === profile.id}
                     >
                       <XCircle className="h-3.5 w-3.5" />
@@ -210,24 +270,24 @@ function AdminUsersPage() {
                     </Button>
                   </>
                 )}
-                {profile.approval_status === 'approved' && (
+                {canManage(profile) && profile.approval_status === 'approved' && (
                   <Button
                     size="sm"
                     variant="outline"
                     className="gap-1 text-red-600 border-red-200 hover:bg-red-50"
-                    onClick={() => handleReject(profile.id)}
+                    onClick={() => openConfirmModal(profile, 'reject')}
                     disabled={actionLoading === profile.id}
                   >
                     <XCircle className="h-3.5 w-3.5" />
                     Rechazar
                   </Button>
                 )}
-                {profile.approval_status === 'rejected' && (
+                {canManage(profile) && profile.approval_status === 'rejected' && (
                   <Button
                     size="sm"
                     variant="outline"
                     className="gap-1 text-green-600 border-green-200 hover:bg-green-50"
-                    onClick={() => handleApprove(profile.id)}
+                    onClick={() => openConfirmModal(profile, 'approve')}
                     disabled={actionLoading === profile.id}
                   >
                     <CheckCircle2 className="h-3.5 w-3.5" />
