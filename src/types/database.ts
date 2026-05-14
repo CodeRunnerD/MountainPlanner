@@ -1,5 +1,5 @@
 export type AppRole = 'organizer' | 'expedition_lead' | 'participant'
-export type UserApprovalStatus = 'pending_email' | 'pending_approval' | 'approved' | 'rejected'
+export type UserApprovalStatus = 'pending_email' | 'pending_approval' | 'active' | 'suspended' | 'rejected'
 export type TripStatus = 'draft' | 'open' | 'closed' | 'completed' | 'cancelled'
 export type RegistrationStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled'
 export type EquipmentStatus = 'owned' | 'needs_rental'

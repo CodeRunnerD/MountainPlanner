@@ -27,11 +27,11 @@ const admin = createClient(supabaseUrl, serviceRoleKey, {
 })
 
 const users = [
-  { email: 'carlos@example.com', password: 'password123', display_name: 'Carlos Montaña', role: 'organizer', approval_status: 'approved', neighborhood: 'Chapinero' },
-  { email: 'ana@example.com', password: 'password123', display_name: 'Ana Rios', role: 'expedition_lead', approval_status: 'approved', neighborhood: 'Usaquén' },
-  { email: 'luis@example.com', password: 'password123', display_name: 'Luis Peña', role: 'participant', approval_status: 'approved', neighborhood: 'Suba' },
-  { email: 'maria@example.com', password: 'password123', display_name: 'María Torres', role: 'participant', approval_status: 'approved', neighborhood: 'Teusaquillo' },
-  { email: 'diego@example.com', password: 'password123', display_name: 'Diego Herrera', role: 'participant', approval_status: 'approved', neighborhood: 'Envigado' },
+  { email: 'carlos@example.com', password: 'password123', display_name: 'Carlos Montaña', role: 'organizer',     approval_status: 'active', neighborhood: 'Chapinero' },
+  { email: 'ana@example.com', password: 'password123', display_name: 'Ana Rios', role: 'expedition_lead',     approval_status: 'active', neighborhood: 'Usaquén' },
+  { email: 'luis@example.com', password: 'password123', display_name: 'Luis Peña', role: 'participant',     approval_status: 'active', neighborhood: 'Suba' },
+  { email: 'maria@example.com', password: 'password123', display_name: 'María Torres', role: 'participant',     approval_status: 'active', neighborhood: 'Teusaquillo' },
+  { email: 'diego@example.com', password: 'password123', display_name: 'Diego Herrera', role: 'participant',     approval_status: 'active', neighborhood: 'Envigado' },
 ]
 
 async function seed() {
@@ -47,7 +47,6 @@ async function seed() {
       user_metadata: {
         display_name: u.display_name,
         role: u.role,
-        approval_status: u.approval_status,
       }
     })
     if (error) {

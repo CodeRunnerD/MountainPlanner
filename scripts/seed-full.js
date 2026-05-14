@@ -50,11 +50,41 @@ async function seed() {
   console.log('=== Full Seed Script ===')
   await clearData()
 
-  // Get existing users
-  const { data: { users } } = await admin.auth.admin.listUsers()
+  // Get or create users
+  const { data: { users: existingUsers } } = await admin.auth.admin.listUsers()
   const userMap = {}
-  for (const u of users) {
+  for (const u of existingUsers) {
     userMap[u.email] = u.id
+  }
+
+  const seedUsers = [
+    { email: 'carlos@example.com', password: 'password123', display_name: 'Carlos Montaña', role: 'organizer', approval_status: 'active' },
+    { email: 'ana@example.com', password: 'password123', display_name: 'Ana Rios', role: 'expedition_lead', approval_status: 'active' },
+    { email: 'luis@example.com', password: 'password123', display_name: 'Luis Peña', role: 'participant', approval_status: 'active' },
+    { email: 'maria@example.com', password: 'password123', display_name: 'María Torres', role: 'participant', approval_status: 'active' },
+    { email: 'diego@example.com', password: 'password123', display_name: 'Diego Herrera', role: 'participant', approval_status: 'active' },
+  ]
+
+  for (const u of seedUsers) {
+    if (!userMap[u.email]) {
+      const { data, error } = await admin.auth.admin.createUser({
+        email: u.email,
+        password: u.password,
+        email_confirm: true,
+        user_metadata: {
+          display_name: u.display_name,
+          role: u.role,
+        }
+      })
+      if (error) {
+        console.error(`Failed to create ${u.email}:`, error.message)
+        continue
+      }
+      userMap[u.email] = data.user.id
+      console.log(`Created user: ${u.display_name}`)
+    } else {
+      console.log(`User already exists: ${u.email}`)
+    }
   }
 
   const carlosId = userMap['carlos@example.com']
@@ -67,11 +97,11 @@ async function seed() {
 
   // Update profiles with full info
   const profileUpdates = [
-    { id: carlosId, display_name: 'Carlos Montaña', avatar_url: 'https://i.pravatar.cc/150?u=user-1', role: 'organizer', approval_status: 'approved', phone: '+57 300 123 4567', neighborhood: 'Chapinero', lat: 4.6483, lng: -74.0628 },
-    { id: anaId, display_name: 'Ana Rios', avatar_url: 'https://i.pravatar.cc/150?u=user-2', role: 'expedition_lead', approval_status: 'approved', phone: '+57 310 987 6543', neighborhood: 'Usaquén', lat: 4.7021, lng: -74.0308 },
-    { id: luisId, display_name: 'Luis Peña', avatar_url: 'https://i.pravatar.cc/150?u=user-3', role: 'participant', approval_status: 'approved', phone: '+57 320 555 8888', neighborhood: 'Suba', lat: 4.7436, lng: -74.0827 },
-    { id: mariaId, display_name: 'María Torres', avatar_url: 'https://i.pravatar.cc/150?u=user-4', role: 'participant', approval_status: 'approved', phone: '+57 315 444 2222', neighborhood: 'Teusaquillo', lat: 4.6243, lng: -74.0892 },
-    { id: diegoId, display_name: 'Diego Herrera', avatar_url: 'https://i.pravatar.cc/150?u=user-5', role: 'participant', approval_status: 'approved', phone: '+57 317 777 3333', neighborhood: 'Envigado', lat: 6.1676, lng: -75.5838 },
+    { id: carlosId, display_name: 'Carlos Montaña', avatar_url: 'https://i.pravatar.cc/150?u=user-1', role: 'organizer',     approval_status: 'active', phone: '+57 300 123 4567', neighborhood: 'Chapinero', lat: 4.6483, lng: -74.0628 },
+    { id: anaId, display_name: 'Ana Rios', avatar_url: 'https://i.pravatar.cc/150?u=user-2', role: 'expedition_lead',     approval_status: 'active', phone: '+57 310 987 6543', neighborhood: 'Usaquén', lat: 4.7021, lng: -74.0308 },
+    { id: luisId, display_name: 'Luis Peña', avatar_url: 'https://i.pravatar.cc/150?u=user-3', role: 'participant',     approval_status: 'active', phone: '+57 320 555 8888', neighborhood: 'Suba', lat: 4.7436, lng: -74.0827 },
+    { id: mariaId, display_name: 'María Torres', avatar_url: 'https://i.pravatar.cc/150?u=user-4', role: 'participant',     approval_status: 'active', phone: '+57 315 444 2222', neighborhood: 'Teusaquillo', lat: 4.6243, lng: -74.0892 },
+    { id: diegoId, display_name: 'Diego Herrera', avatar_url: 'https://i.pravatar.cc/150?u=user-5', role: 'participant',     approval_status: 'active', phone: '+57 317 777 3333', neighborhood: 'Envigado', lat: 6.1676, lng: -75.5838 },
   ]
 
   for (const p of profileUpdates) {

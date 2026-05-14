@@ -30,16 +30,20 @@ function LoginPage() {
 
     // Check approval status
     const approval = user.profile?.approval_status
+    if (approval === 'pending_email') {
+      navigate({ to: '/verify-email' })
+      return
+    }
     if (approval === 'pending_approval') {
       navigate({ to: '/waiting-approval' })
       return
     }
-    if (approval === 'rejected') {
+    if (approval === 'rejected' || approval === 'suspended') {
       navigate({ to: '/waiting-approval' })
       return
     }
 
-    // Approved and email confirmed
+    // Active and email confirmed
     if (redirect && redirect.startsWith('/')) {
       navigate({ href: redirect })
     } else {

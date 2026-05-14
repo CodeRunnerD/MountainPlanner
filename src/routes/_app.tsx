@@ -40,7 +40,11 @@ function AppLayout() {
     }
     // Check approval status
     const approval = user.profile?.approval_status
-    if (approval === 'pending_approval' || approval === 'rejected') {
+    if (approval === 'pending_email') {
+      navigate({ to: '/verify-email' })
+      return
+    }
+    if (approval === 'pending_approval' || approval === 'rejected' || approval === 'suspended') {
       navigate({ to: '/waiting-approval' })
       return
     }

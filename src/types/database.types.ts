@@ -649,8 +649,9 @@ export type Database = {
       user_approval_status:
         | "pending_email"
         | "pending_approval"
-        | "approved"
+        | "active"
         | "rejected"
+        | "suspended"
       waypoint_type: "start" | "waypoint" | "summit" | "end"
     }
     CompositeTypes: {
@@ -792,8 +793,9 @@ export const Constants = {
       user_approval_status: [
         "pending_email",
         "pending_approval",
-        "approved",
+        "active",
         "rejected",
+        "suspended",
       ],
       waypoint_type: ["start", "waypoint", "summit", "end"],
     },

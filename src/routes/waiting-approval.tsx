@@ -31,6 +31,13 @@ function WaitingApprovalPage() {
                 Tu solicitud de acceso fue rechazada por un organizador. Si crees que es un error, contacta al equipo directamente.
               </p>
             </>
+          ) : approvalStatus === 'suspended' ? (
+            <>
+              <h2 className="mt-4 text-xl font-bold text-foreground">Cuenta suspendida</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Tu cuenta ha sido suspendida temporalmente. Contacta a un organizador para más información.
+              </p>
+            </>
           ) : (
             <>
               <h2 className="mt-4 text-xl font-bold text-foreground">Esperando aprobación</h2>
