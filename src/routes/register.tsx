@@ -189,18 +189,24 @@ function RegisterPage() {
               )}
             />
             <form.Subscribe
-              selector={(state) => [state.canSubmit, state.isSubmitting, state.errorMap]}
-              children={([canSubmit, isSubmitting, errorMap]) => (
-                <>
-                  {typeof errorMap === 'object' && errorMap.onSubmit && (
-                    <p className="text-xs text-destructive">{errorMap.onSubmit}</p>
-                  )}
-                  <Button type="submit" className="w-full gap-2" disabled={!canSubmit || isSubmitting}>
-                    {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </>
-              )}
+              selector={(state) => [state.canSubmit, state.isSubmitting, state.errorMap] as [boolean, boolean, unknown] }
+              children={([canSubmit, isSubmitting, errorMap]) => {
+                const submitError =
+                  errorMap && typeof errorMap === 'object' && 'onSubmit' in errorMap
+                    ? (errorMap as { onSubmit?: string }).onSubmit
+                    : undefined
+                return (
+                  <>
+                    {submitError && (
+                      <p className="text-xs text-destructive">{submitError}</p>
+                    )}
+                    <Button type="submit" className="w-full gap-2" disabled={!canSubmit || isSubmitting}>
+                      {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </>
+                )
+              }}
             />
           </form>
         </div>

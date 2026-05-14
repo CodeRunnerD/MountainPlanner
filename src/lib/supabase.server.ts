@@ -27,7 +27,7 @@ export function getServerSupabase() {
     {
       cookies: {
         getAll() {
-          return cookies.map((c) => ({ name: c.name, value: c.value }))
+          return cookies.map((c) => ({ name: c.name, value: c.value ?? '' }))
         },
         setAll() {
           // Read-only for session validation; client handles cookie updates

@@ -24,6 +24,12 @@ type Trip = Tables<'trips'>
 type RouteItem = Tables<'routes'>
 type Profile = Tables<'profiles'>
 
+function getGpxValue(route: RouteItem | undefined, key: 'distance' | 'elevation_gain'): number {
+  const parsed = route?.gpx_parsed as Record<string, unknown> | null
+  const value = parsed?.[key]
+  return typeof value === 'number' ? value : 0
+}
+
 export const Route = createFileRoute('/')({
   component: LandingPage,
 })
@@ -33,7 +39,6 @@ function LandingPage() {
   const [trips, setTrips] = useState<Trip[]>([])
   const [routes, setRoutes] = useState<RouteItem[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,7 +50,6 @@ function LandingPage() {
       setTrips(t || [])
       setRoutes(r || [])
       setProfiles(p || [])
-      setLoading(false)
     }
     fetchData()
   }, [])
@@ -228,8 +232,8 @@ function LandingPage() {
                     className="group block overflow-hidden rounded-2xl border border-primary-foreground/20 bg-card/90 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
                   >
                     <div className="relative aspect-[16/10] overflow-hidden">
-                      <img
-                        src={trip.cover_image}
+                        <img
+                        src={trip.cover_image ?? ''}
                         alt={trip.title}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
@@ -258,16 +262,16 @@ function LandingPage() {
                         </span>
                         <span className="flex items-center gap-1">
                           <TrendingUp className="h-3.5 w-3.5" />
-                          {route?.gpx_parsed?.distance ?? 0} km
+                          {getGpxValue(route, 'distance')} km
                         </span>
                         <span className="flex items-center gap-1">
                           <Layers className="h-3.5 w-3.5" />
-                          {route?.gpx_parsed?.elevation_gain ?? 0} m
+                          {getGpxValue(route, 'elevation_gain')} m
                         </span>
                       </div>
                       <div className="mt-4 flex items-center gap-2 border-t border-border pt-3">
                         <img
-                          src={organizer?.avatar_url}
+                          src={organizer?.avatar_url ?? ''}
                           alt={organizer?.display_name}
                           className="h-6 w-6 rounded-full object-cover"
                         />
@@ -315,7 +319,7 @@ function LandingPage() {
                         </span>
                         <span className="flex items-center gap-1">
                           <TrendingUp className="h-3.5 w-3.5" />
-                          {route?.gpx_parsed?.distance ?? 0} km
+                          {getGpxValue(route, 'distance')} km
                         </span>
                         <span className="flex items-center gap-1">
                           <MapPin className="h-3.5 w-3.5" />
@@ -325,7 +329,7 @@ function LandingPage() {
                       <div className="flex items-center justify-between border-t border-border pt-3">
                         <div className="flex items-center gap-2">
                           <img
-                            src={organizer?.avatar_url}
+                            src={organizer?.avatar_url ?? ''}
                             alt={organizer?.display_name}
                             className="h-6 w-6 rounded-full object-cover"
                           />
@@ -375,7 +379,7 @@ function LandingPage() {
                           {route.name}
                         </h3>
                         <p className="text-xs text-muted-foreground">
-                          {route.gpx_parsed?.distance ?? 0} km · {route.gpx_parsed?.elevation_gain ?? 0} m+
+                          {getGpxValue(route, 'distance')} km · {getGpxValue(route, 'elevation_gain')} m+
                         </p>
                       </div>
                     </div>
@@ -384,7 +388,7 @@ function LandingPage() {
                     </p>
                     <div className="mt-3 flex items-center gap-2">
                       <img
-                        src={creator?.avatar_url}
+                        src={creator?.avatar_url ?? ''}
                         alt={creator?.display_name}
                         className="h-5 w-5 rounded-full object-cover"
                       />

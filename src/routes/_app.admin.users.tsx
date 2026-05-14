@@ -69,7 +69,7 @@ function AdminUsersPage() {
     if (!selectedProfile || !pendingAction) return
     setActionLoading(selectedProfile.id)
 
-    let newStatus: string
+    let newStatus: Profile['approval_status']
     switch (pendingAction) {
       case 'approve':
         newStatus = 'active'
@@ -121,18 +121,19 @@ function AdminUsersPage() {
   }
 
   // Helper to get available actions for a profile
-  const getActions = (profile: Profile) => {
+  const getActions = (profile: Profile): ('approve' | 'reject' | 'suspend' | 'reactivate')[] => {
     if (!canManage(profile)) return []
     switch (profile.approval_status) {
       case 'pending_email':
+        return ['reject']
       case 'pending_approval':
-        return ['approve', 'reject'] as const
+        return ['approve', 'reject']
       case 'active':
-        return ['suspend', 'reject'] as const
+        return ['suspend', 'reject']
       case 'suspended':
-        return ['reactivate', 'reject'] as const
+        return ['reactivate', 'reject']
       case 'rejected':
-        return ['reactivate'] as const
+        return ['reactivate']
       default:
         return []
     }

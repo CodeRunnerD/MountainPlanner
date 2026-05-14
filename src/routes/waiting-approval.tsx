@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
 import { Mountain, Clock, ArrowLeft } from 'lucide-react'
 import { useAuth } from '#/contexts/AuthContext'
@@ -9,7 +9,13 @@ export const Route = createFileRoute('/waiting-approval')({
 
 function WaitingApprovalPage() {
   const { user, signOut } = useAuth()
+  const navigate = useNavigate()
   const approvalStatus = user?.profile?.approval_status
+
+  const handleBackToLogin = async () => {
+    await signOut()
+    navigate({ to: '/login' })
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -48,20 +54,11 @@ function WaitingApprovalPage() {
           )}
 
           <div className="mt-6 space-y-3">
-            <Button variant="outline" className="w-full gap-1" asChild>
-              <Link to="/login">
-                <ArrowLeft className="h-4 w-4" />
-                Volver al inicio de sesión
-              </Link>
+            <Button variant="outline" className="w-full gap-1" onClick={handleBackToLogin}>
+              <ArrowLeft className="h-4 w-4" />
+              Volver al inicio de sesión
             </Button>
           </div>
-
-          <button
-            onClick={() => signOut()}
-            className="mt-4 text-xs text-muted-foreground hover:text-foreground underline"
-          >
-            Cerrar sesión y usar otra cuenta
-          </button>
         </div>
       </div>
     </div>

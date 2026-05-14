@@ -53,8 +53,10 @@ function RouteDetailPage() {
       const [{ data: w }, { data: s }, { data: c }, { data: t }] = await Promise.all([
         supabase.from('route_waypoints').select('*').eq('route_id', routeId),
         supabase.from('route_skill_requirements').select('*').eq('route_id', routeId),
-        supabase.from('profiles').select('*').eq('id', r.created_by).single(),
-        supabase.from('trips').select('id, title, start_date').eq('route_id', routeId),
+        r.created_by
+          ? supabase.from('profiles').select('*').eq('id', r.created_by).single()
+          : Promise.resolve({ data: null, error: null }),
+        supabase.from('trips').select('*').eq('route_id', routeId),
       ])
 
       setWaypoints(w || [])

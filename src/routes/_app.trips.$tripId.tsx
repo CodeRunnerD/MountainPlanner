@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '#/components/ui/avatar'
 import { supabase } from '#/lib/supabase'
-import { useAuth, type AuthUser } from '#/contexts/AuthContext'
+import { useAuth } from '#/contexts/AuthContext'
 import { useState, useEffect } from 'react'
 import {
   ArrowLeft,
@@ -239,7 +239,7 @@ function TripDetailPage() {
                 return (
                   <div key={p.id} className="flex items-center gap-3 rounded-lg border border-border bg-card/50 p-3">
                     <Avatar className="h-9 w-9">
-                      <AvatarImage src={profile?.avatar_url} />
+                      <AvatarImage src={profile?.avatar_url ?? undefined} />
                       <AvatarFallback>{profile?.display_name?.[0]}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">

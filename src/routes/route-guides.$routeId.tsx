@@ -7,7 +7,7 @@ import { supabase } from '#/lib/supabase'
 import { useState, useEffect } from 'react'
 import {
   Mountain, ArrowLeft, ArrowRight, X, TrendingUp, Layers,
-  Navigation, Star, Flag, CircleDot, Download, Map, Clock, Calendar, Gauge, Loader2,
+  Navigation, Star, Flag, CircleDot, Download, Map, Clock, Loader2,
 } from 'lucide-react'
 import type { Tables } from '#/types/database.types'
 
@@ -46,10 +46,12 @@ function RouteGuidePage() {
       if (!r) { setLoading(false); return }
       setRoute(r)
       const [{ data: c }, { data: w }, { data: s }, { data: t }] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', r.created_by).single(),
+        r.created_by
+          ? supabase.from('profiles').select('*').eq('id', r.created_by).single()
+          : Promise.resolve({ data: null, error: null }),
         supabase.from('route_waypoints').select('*').eq('route_id', routeId),
         supabase.from('route_skill_requirements').select('*').eq('route_id', routeId),
-        supabase.from('trips').select('id, title, start_date').eq('route_id', routeId),
+        supabase.from('trips').select('*').eq('route_id', routeId),
       ])
       setCreator(c)
       setWaypoints(w || [])

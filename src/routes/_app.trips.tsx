@@ -12,7 +12,6 @@ import {
   Plus,
   ArrowRight,
   MapPin,
-  Users,
   Clock,
   Loader2,
 } from 'lucide-react'
@@ -42,7 +41,7 @@ function TripsListPage() {
       setLoading(true)
       const [{ data: t }, { data: r }, { data: p }, { data: tp }] = await Promise.all([
         supabase.from('trips').select('*').order('start_date', { ascending: true }),
-        supabase.from('routes').select('id, name'),
+        supabase.from('routes').select('*'),
         supabase.from('profiles').select('*'),
         supabase.from('trip_participants').select('*'),
       ])

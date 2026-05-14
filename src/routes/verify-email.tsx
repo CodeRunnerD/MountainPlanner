@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
 import { Mountain, Mail, ArrowLeft, Loader2 } from 'lucide-react'
 import { useAuth } from '#/contexts/AuthContext'
@@ -10,6 +10,7 @@ export const Route = createFileRoute('/verify-email')({
 
 function VerifyEmailPage() {
   const { user, resendConfirmation, signOut } = useAuth()
+  const navigate = useNavigate()
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
 
@@ -23,9 +24,14 @@ function VerifyEmailPage() {
     if (!error) setSent(true)
   }
 
+  const handleBackToLogin = async () => {
+    await signOut()
+    navigate({ to: '/login' })
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md space-y-6 text-center">
+      <div className="w-full space-y-6 text-center">
         <div className="flex flex-col items-center space-y-2">
           <Mountain className="h-8 w-8 text-primary" />
           <span className="text-2xl font-bold text-foreground">MountainPlanner</span>
@@ -58,20 +64,11 @@ function VerifyEmailPage() {
               {sent ? 'Correo reenviado' : 'Reenviar correo'}
             </Button>
 
-            <Button variant="outline" className="w-full gap-1" asChild>
-              <Link to="/login">
-                <ArrowLeft className="h-4 w-4" />
-                Volver al inicio de sesión
-              </Link>
+            <Button variant="outline" className="w-full gap-1" onClick={handleBackToLogin}>
+              <ArrowLeft className="h-4 w-4" />
+              Volver al inicio de sesión
             </Button>
           </div>
-
-          <button
-            onClick={() => signOut()}
-            className="mt-4 text-xs text-muted-foreground hover:text-foreground underline"
-          >
-            Cerrar sesión y usar otra cuenta
-          </button>
         </div>
       </div>
     </div>

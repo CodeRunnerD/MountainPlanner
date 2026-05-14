@@ -30,5 +30,5 @@ export const getUserWithProfile = createServerFn({ method: 'GET' }).handler(asyn
     .single()
 
   if (profileError) return null
-  return { user: authData.user, profile }
+  return { user: authData.user, profile } as { user: typeof authData.user; profile: typeof profile }
 })

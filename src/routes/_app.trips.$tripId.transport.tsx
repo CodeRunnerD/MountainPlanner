@@ -346,7 +346,7 @@ function TransportPage() {
                       onClick={() => isOrganizer && !isAssigning && setAssigningParticipantId(p.id)}
                     >
                       <Avatar className="h-7 w-7">
-                        <AvatarImage src={profile?.avatar_url} />
+                        <AvatarImage src={profile?.avatar_url ?? undefined} />
                         <AvatarFallback className="text-xs">{profile?.display_name?.[0]}</AvatarFallback>
                       </Avatar>
                       <span className="text-sm flex-1 truncate">{profile?.display_name}</span>
