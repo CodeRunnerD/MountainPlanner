@@ -8,20 +8,86 @@ export interface ParsedWaypoint {
 	type: "start" | "waypoint" | "summit" | "end";
 }
 
+export interface GpxParseResult {
+	waypoints: ParsedWaypoint[];
+	trackPoints: [number, number][];
+}
+
+export function createAutoWaypoints(
+	trackPoints: Array<{ lat: number; lng: number; elevation?: number }>,
+): ParsedWaypoint[] {
+	if (trackPoints.length === 0) return [];
+
+	const waypoints: ParsedWaypoint[] = [];
+
+	// First track point = Inicio
+	waypoints.push({
+		lat: trackPoints[0].lat,
+		lng: trackPoints[0].lng,
+		elevation: trackPoints[0].elevation,
+		name: "Inicio",
+		type: "start",
+	});
+
+	// If only one point, that's it
+	if (trackPoints.length === 1) return waypoints;
+
+	// Find highest elevation as summit (excluding start and end)
+	let highestIndex = -1;
+	let highestElevation = -Infinity;
+
+	for (let i = 1; i < trackPoints.length - 1; i++) {
+		const ele = trackPoints[i].elevation;
+		if (ele !== undefined && ele > highestElevation) {
+			highestElevation = ele;
+			highestIndex = i;
+		}
+	}
+
+	// If no elevation data, use middle point as summit
+	if (highestIndex === -1 && trackPoints.length > 2) {
+		highestIndex = Math.floor(trackPoints.length / 2);
+	}
+
+	if (highestIndex !== -1) {
+		waypoints.push({
+			lat: trackPoints[highestIndex].lat,
+			lng: trackPoints[highestIndex].lng,
+			elevation: trackPoints[highestIndex].elevation,
+			name: "Cumbre",
+			type: "summit",
+		});
+	}
+
+	// Last track point = Fin
+	waypoints.push({
+		lat: trackPoints[trackPoints.length - 1].lat,
+		lng: trackPoints[trackPoints.length - 1].lng,
+		elevation: trackPoints[trackPoints.length - 1].elevation,
+		name: "Fin",
+		type: "end",
+	});
+
+	return waypoints;
+}
+
 function determineWaypointTypes(waypoints: ParsedWaypoint[]): ParsedWaypoint[] {
 	if (waypoints.length === 0) return waypoints;
 
-	const result = waypoints.map((wp, index) => ({
+	const result = waypoints.map((wp) => ({
 		...wp,
 		type: "waypoint" as ParsedWaypoint["type"],
 	}));
 
 	// First waypoint is start
 	result[0].type = "start";
+	if (!result[0].name) result[0].name = "Inicio";
 
 	// Last waypoint is end (if more than one)
 	if (result.length > 1) {
 		result[result.length - 1].type = "end";
+		if (!result[result.length - 1].name)
+			result[result.length - 1].name = "Fin";
 	}
 
 	// Find highest elevation waypoint as summit (excluding start/end)
@@ -43,12 +109,13 @@ function determineWaypointTypes(waypoints: ParsedWaypoint[]): ParsedWaypoint[] {
 
 	if (highestIndex !== -1) {
 		result[highestIndex].type = "summit";
+		if (!result[highestIndex].name) result[highestIndex].name = "Cumbre";
 	}
 
 	return result;
 }
 
-export function parseGpx(xml: string): ParsedWaypoint[] {
+export function parseGpx(xml: string): GpxParseResult {
 	const parser = new XMLParser({
 		ignoreAttributes: false,
 		attributeNamePrefix: "",
@@ -71,6 +138,8 @@ export function parseGpx(xml: string): ParsedWaypoint[] {
 	}
 
 	const waypoints: ParsedWaypoint[] = [];
+	const rawTrackPoints: Array<{ lat: number; lng: number; elevation?: number }> =
+		[];
 
 	// Parse <wpt> elements
 	const wpts = gpx.wpt;
@@ -110,12 +179,10 @@ export function parseGpx(xml: string): ParsedWaypoint[] {
 					const lon = Number(pt.lon);
 					if (Number.isNaN(lat) || Number.isNaN(lon)) continue;
 
-					waypoints.push({
+					rawTrackPoints.push({
 						lat,
 						lng: lon,
 						elevation: pt.ele !== undefined ? Number(pt.ele) : undefined,
-						name: pt.name !== undefined ? String(pt.name) : undefined,
-						type: "waypoint",
 					});
 				}
 			}
@@ -136,20 +203,31 @@ export function parseGpx(xml: string): ParsedWaypoint[] {
 				const lon = Number(pt.lon);
 				if (Number.isNaN(lat) || Number.isNaN(lon)) continue;
 
-				waypoints.push({
+				rawTrackPoints.push({
 					lat,
 					lng: lon,
 					elevation: pt.ele !== undefined ? Number(pt.ele) : undefined,
-					name: pt.name !== undefined ? String(pt.name) : undefined,
-					type: "waypoint",
 				});
 			}
 		}
 	}
 
-	if (waypoints.length === 0) {
+	const trackPoints: [number, number][] = rawTrackPoints.map((pt) => [
+		pt.lat,
+		pt.lng,
+	]);
+
+	if (waypoints.length === 0 && rawTrackPoints.length === 0) {
 		throw new Error("No valid waypoints found in GPX file");
 	}
 
-	return determineWaypointTypes(waypoints);
+	const finalWaypoints =
+		waypoints.length > 0
+			? determineWaypointTypes(waypoints)
+			: createAutoWaypoints(rawTrackPoints);
+
+	return {
+		waypoints: finalWaypoints,
+		trackPoints,
+	};
 }

@@ -366,15 +366,13 @@ function EditRoutePage() {
 			let trk: [number, number][] = [];
 
 			if (ext === "gpx") {
-				parsed = parseGpx(text);
-				trk = parsed.map((wp) => [wp.lat, wp.lng] as [number, number]);
+				const gpxResult = parseGpx(text);
+				parsed = gpxResult.waypoints;
+				trk = gpxResult.trackPoints;
 			} else {
 				const kmlResult = parseKml(text);
 				parsed = kmlResult.waypoints;
-				trk =
-					kmlResult.track?.points.map(
-						(p) => [p[0], p[1]] as [number, number],
-					) || parsed.map((wp) => [wp.lat, wp.lng] as [number, number]);
+				trk = kmlResult.trackPoints;
 			}
 
 			setWaypoints(parsed);
