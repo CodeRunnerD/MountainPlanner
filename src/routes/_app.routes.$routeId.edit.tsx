@@ -139,15 +139,14 @@ function EditRoutePage() {
 				setWaypoints(parsedWaypoints);
 				setTrackPoints(parsedWaypoints.map((wp) => [wp.lat, wp.lng]));
 
-				form.reset({
-					name: r.name,
-					description: r.description ?? "",
-					story: r.story ?? "",
-					coverImage: r.cover_image ?? "",
-					difficulty: r.difficulty ?? "",
-					sourceUrl: r.source_url ?? "",
-					skills: s?.map((x) => x.skill_tag) || [],
-				});
+				// Use setFieldValue for each field instead of reset for reliability
+				form.setFieldValue("name", r.name);
+				form.setFieldValue("description", r.description ?? "");
+				form.setFieldValue("story", r.story ?? "");
+				form.setFieldValue("coverImage", r.cover_image ?? "");
+				form.setFieldValue("difficulty", r.difficulty ?? "");
+				form.setFieldValue("sourceUrl", r.source_url ?? "");
+				form.setFieldValue("skills", s?.map((x) => x.skill_tag) || []);
 			}
 			setLoading(false);
 		};
@@ -163,17 +162,15 @@ function EditRoutePage() {
 				const draftDate = new Date(draft.savedAt);
 				const routeDate = new Date(route.updated_at ?? route.created_at);
 				if (draftDate > routeDate) {
-					form.reset({
-						name: draft.name || route.name,
-						description: draft.description || (route.description ?? ""),
-						story: draft.story || (route.story ?? ""),
-						coverImage: draft.coverImage || (route.cover_image ?? ""),
-						difficulty: draft.difficulty || (route.difficulty ?? ""),
-						sourceUrl: draft.sourceUrl || (route.source_url ?? ""),
-						skills: draft.skills?.length
-							? draft.skills
-							: s?.map((x) => x.skill_tag) || [],
-					});
+					form.setFieldValue("name", draft.name || route.name);
+					form.setFieldValue("description", draft.description || (route.description ?? ""));
+					form.setFieldValue("story", draft.story || (route.story ?? ""));
+					form.setFieldValue("coverImage", draft.coverImage || (route.cover_image ?? ""));
+					form.setFieldValue("difficulty", draft.difficulty || (route.difficulty ?? ""));
+					form.setFieldValue("sourceUrl", draft.sourceUrl || (route.source_url ?? ""));
+					form.setFieldValue("skills", draft.skills?.length
+						? draft.skills
+						: s?.map((x) => x.skill_tag) || []);
 					setWaypoints(draft.waypoints);
 					setTrackPoints(draft.trackPoints);
 				}
