@@ -64,16 +64,15 @@ function RoutesListPage() {
     // Status filter
     const matchesStatus = statusFilter === 'all' ? true : route.status === statusFilter
 
-    // Visibility rules
-    // - Participant: only published
-    // - Expedition lead: published + own draft/pending
-    // - Organizer: all routes
+    // Visibility rules — must match RLS policy in Supabase
+    // - published: visible to all authenticated users
+    // - draft: visible only to creator
+    // - pending_approval: visible to creator and active organizers
     const isVisible =
       route.status === 'published' ||
-      role === 'organizer' ||
-      (role === 'expedition_lead' &&
-        route.created_by === userId &&
-        (route.status === 'draft' || route.status === 'pending_approval'))
+      (route.status === 'draft' && route.created_by === userId) ||
+      (route.status === 'pending_approval' &&
+        (route.created_by === userId || role === 'organizer'))
 
     return matchesSearch && matchesStatus && isVisible
   })

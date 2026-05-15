@@ -120,6 +120,7 @@ async function seed() {
       gpx_parsed: { distance: 4, elevation_gain: 1033, elevation_loss: 1033 },
       source_url: 'https://www.wikiloc.com/rutas-alpinismo/cotopaxi-ruta-normal',
       created_by: carlosId,
+      status: 'published',
     },
     {
       name: 'Chimborazo - Ruta Whymper (Cumbre Máxima)',
@@ -130,6 +131,7 @@ async function seed() {
       gpx_parsed: { distance: 8, elevation_gain: 1300, elevation_loss: 1300 },
       source_url: 'https://www.wikiloc.com/rutas-alpinismo/chimborazo-ruta-whymper',
       created_by: anaId,
+      status: 'published',
     },
     {
       name: 'Rucu Pichincha - Ruta Normal desde Quito',
@@ -140,6 +142,7 @@ async function seed() {
       gpx_parsed: { distance: 8, elevation_gain: 800, elevation_loss: 800 },
       source_url: 'https://www.wikiloc.com/rutas-senderismo/rucu-pichincha',
       created_by: carlosId,
+      status: 'published',
     },
     {
       name: 'Iliniza Norte - Ruta de la Arista',
@@ -150,6 +153,7 @@ async function seed() {
       gpx_parsed: { distance: 6, elevation_gain: 900, elevation_loss: 900 },
       source_url: 'https://www.wikiloc.com/rutas-alpinismo/iliniza-norte',
       created_by: anaId,
+      status: 'published',
     },
   ]).select()
 

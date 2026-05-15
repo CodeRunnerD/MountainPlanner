@@ -46,6 +46,7 @@ function RouteDetailPage() {
 	const [creator, setCreator] = useState<Profile | null>(null);
 	const [tripsUsing, setTripsUsing] = useState<Trip[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 	const [downloading, setDownloading] = useState(false);
 	const isOrganizer = useIsOrganizer();
 	const { user } = useAuth();
@@ -55,19 +56,36 @@ function RouteDetailPage() {
 	useEffect(() => {
 		const fetchData = async () => {
 			setLoading(true);
-			const { data: r } = await supabase
-				.from("routes")
-				.select("*")
-				.eq("id", routeId)
-				.single();
-			if (!r) {
-				setLoading(false);
-				return;
-			}
-			setRoute(r);
+			setError(null);
+			try {
+				const { data: r, error: routeError } = await supabase
+					.from("routes")
+					.select("*")
+					.eq("id", routeId)
+					.single();
+				if (routeError) {
+					console.error("Error loading route:", routeError);
+					setError(
+						routeError.code === "PGRST116"
+							? "Ruta no encontrada o no tienes permiso para verla"
+							: `Error al cargar la ruta: ${routeError.message}`,
+					);
+					setLoading(false);
+					return;
+				}
+				if (!r) {
+					setError("Ruta no encontrada");
+					setLoading(false);
+					return;
+				}
+				setRoute(r);
 
-			const [{ data: w }, { data: s }, { data: c }, { data: t }] =
-				await Promise.all([
+				const [
+					{ data: w, error: wpError },
+					{ data: s, error: skillError },
+					{ data: c },
+					{ data: t, error: tripError },
+				] = await Promise.all([
 					supabase
 						.from("route_waypoints")
 						.select("*")
@@ -87,22 +105,38 @@ function RouteDetailPage() {
 					supabase.from("trips").select("*").eq("route_id", routeId),
 				]);
 
-			setWaypoints(w || []);
-			setSkills(s || []);
-			setCreator(c);
-			setTripsUsing(t || []);
+				if (wpError) {
+					console.error("Error loading waypoints:", wpError);
+				}
+				if (skillError) {
+					console.error("Error loading skills:", skillError);
+				}
+				if (tripError) {
+					console.error("Error loading trips:", tripError);
+				}
 
-			const pWaypoints: ParsedWaypoint[] =
-				w?.map((wp) => ({
-					lat: wp.lat,
-					lng: wp.lng,
-					elevation: wp.elevation ?? undefined,
-					name: wp.name,
-					type: wp.type,
-				})) || [];
-			setParsedWaypoints(pWaypoints);
+				setWaypoints(w || []);
+				setSkills(s || []);
+				setCreator(c);
+				setTripsUsing(t || []);
 
-			setLoading(false);
+				const pWaypoints: ParsedWaypoint[] =
+					w?.map((wp) => ({
+						lat: wp.lat,
+						lng: wp.lng,
+						elevation: wp.elevation ?? undefined,
+						name: wp.name,
+						type: wp.type,
+					})) || [];
+				setParsedWaypoints(pWaypoints);
+			} catch (err) {
+				console.error("Unexpected error loading route detail:", err);
+				setError(
+					"Error inesperado al cargar el detalle de la ruta. Por favor intenta de nuevo.",
+				);
+			} finally {
+				setLoading(false);
+			}
 		};
 		fetchData();
 	}, [routeId]);
@@ -143,10 +177,12 @@ function RouteDetailPage() {
 		);
 	}
 
-	if (!route) {
+	if (error || !route) {
 		return (
-			<div className="text-center py-12">
-				<p className="text-muted-foreground">Ruta no encontrada</p>
+			<div className="text-center py-12 space-y-4">
+				<p className="text-destructive font-medium">
+					{error ?? "Ruta no encontrada"}
+				</p>
 				<Button asChild variant="link">
 					<Link to="/routes">Volver a rutas</Link>
 				</Button>
