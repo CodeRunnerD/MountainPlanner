@@ -1,0 +1,33 @@
+schema: spec-driven
+
+context: |
+  Tech stack: TanStack Start (React 19 + Vite 8), Supabase (PostgreSQL 17, Auth, Storage, Realtime), Tailwind CSS v4, shadcn/ui, GSAP
+  Architecture: File-based routing with TanStack Router, SSR-ready, auth context
+  Testing: Vitest with jsdom, React Testing Library
+  Style: Biome (format, lint, check), pnpm package manager
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Identify affected modules/packages
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group tasks by phase (infrastructure, implementation, testing)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+    - Keep tasks small enough to complete in one session
+  apply:
+    - Follow existing code patterns and conventions
+    - Load frontend-design skill for UI work
+    tdd: false
+    test_command: "pnpm test"
+  verify:
+    test_command: "pnpm test"
+    build_command: "pnpm build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas (large removals)

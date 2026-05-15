@@ -4,8 +4,11 @@ import { Input } from '#/components/ui/input'
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { supabase } from '#/lib/supabase'
+import { useAuth } from '#/contexts/AuthContext'
 import { useIsOrganizer } from './_app'
-import { Map, Search, Plus, ArrowRight, TrendingUp, Layers, Loader2 } from 'lucide-react'
+import { DraftBadge } from '#/components/DraftBadge'
+import { getVisibleStatuses } from '#/lib/routeStatus'
+import { Map, Search, Plus, ArrowRight, TrendingUp, Layers, Loader2, Filter } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import type { Tables } from '#/types/database.types'
 
@@ -13,6 +16,7 @@ type Route = Tables<'routes'>
 type RouteWaypoint = Tables<'route_waypoints'>
 type RouteSkill = Tables<'route_skill_requirements'>
 type Profile = Tables<'profiles'>
+type RouteStatus = Tables<'routes'>['status']
 
 export const Route = createFileRoute('/_app/routes')({
   component: RoutesListPage,
@@ -20,12 +24,16 @@ export const Route = createFileRoute('/_app/routes')({
 
 function RoutesListPage() {
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<RouteStatus | 'all'>('all')
   const [routes, setRoutes] = useState<Route[]>([])
   const [waypoints, setWaypoints] = useState<RouteWaypoint[]>([])
   const [skills, setSkills] = useState<RouteSkill[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const isOrganizer = useIsOrganizer()
+  const { user } = useAuth()
+  const role = user?.profile?.role ?? 'participant'
+  const userId = user?.id
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,10 +53,30 @@ function RoutesListPage() {
     fetchData()
   }, [])
 
-  const filtered = routes.filter((route) =>
-    route.name.toLowerCase().includes(search.toLowerCase()) ||
-    (route.description ?? '').toLowerCase().includes(search.toLowerCase())
-  )
+  const visibleStatuses = getVisibleStatuses(role)
+
+  const filtered = routes.filter((route) => {
+    // Text search
+    const matchesSearch =
+      route.name.toLowerCase().includes(search.toLowerCase()) ||
+      (route.description ?? '').toLowerCase().includes(search.toLowerCase())
+
+    // Status filter
+    const matchesStatus = statusFilter === 'all' ? true : route.status === statusFilter
+
+    // Visibility rules
+    // - Participant: only published
+    // - Expedition lead: published + own draft/pending
+    // - Organizer: all routes
+    const isVisible =
+      route.status === 'published' ||
+      role === 'organizer' ||
+      (role === 'expedition_lead' &&
+        route.created_by === userId &&
+        (route.status === 'draft' || route.status === 'pending_approval'))
+
+    return matchesSearch && matchesStatus && isVisible
+  })
 
   if (loading) {
     return (
@@ -75,14 +103,35 @@ function RoutesListPage() {
         )}
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Buscar rutas..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Buscar rutas..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as RouteStatus | 'all')}
+            className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+          >
+            <option value="all">Todos los estados</option>
+            {visibleStatuses.includes('published') && (
+              <option value="published">Publicadas</option>
+            )}
+            {visibleStatuses.includes('pending_approval') && (
+              <option value="pending_approval">Pendientes</option>
+            )}
+            {visibleStatuses.includes('draft') && (
+              <option value="draft">Borradores</option>
+            )}
+          </select>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -100,6 +149,13 @@ function RoutesListPage() {
                 <p className="text-xs text-muted-foreground line-clamp-2">{route.description}</p>
               </CardHeader>
               <CardContent className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <DraftBadge status={route.status} />
+                  {route.created_by === userId && (
+                    <Badge variant="outline" className="text-xs">Propia</Badge>
+                  )}
+                </div>
+
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <TrendingUp className="h-3.5 w-3.5" />

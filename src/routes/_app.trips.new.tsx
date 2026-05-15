@@ -1,13 +1,15 @@
-import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
+import { Textarea } from '#/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '#/components/ui/select'
 import { Badge } from '#/components/ui/badge'
 import { supabase } from '#/lib/supabase'
 import { useAuth } from '#/contexts/AuthContext'
 import { getUserWithProfile } from '#/lib/session.functions'
+import { requireApprovedOrganizer } from '#/lib/route-guards'
 import { ArrowLeft, ChevronRight, Plus, X, Map, Calendar, Wrench, Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useForm } from '@tanstack/react-form'
@@ -18,10 +20,7 @@ type Route = Tables<'routes'>
 export const Route = createFileRoute('/_app/trips/new')({
   beforeLoad: async () => {
     const data = await getUserWithProfile()
-    const role = data?.profile?.role
-    if (role !== 'organizer' && role !== 'expedition_lead') {
-      throw redirect({ to: '/trips' })
-    }
+    requireApprovedOrganizer(data?.profile)
   },
   component: NewTripPage,
 })
@@ -41,6 +40,10 @@ function NewTripPage() {
       startDate: '',
       endDate: '',
       meetingPoint: '',
+      meetingLat: '',
+      meetingLng: '',
+      story: '',
+      coverImage: '',
       pace: 'medium',
       maxParticipants: '',
       equipment: [] as string[],
@@ -54,11 +57,15 @@ function NewTripPage() {
           organizer_id: user.id,
           title: value.title.trim(),
           meeting_point: value.meetingPoint.trim() || null,
+          meeting_lat: value.meetingLat ? parseFloat(value.meetingLat) : null,
+          meeting_lng: value.meetingLng ? parseFloat(value.meetingLng) : null,
           start_date: new Date(value.startDate).toISOString(),
           end_date: value.endDate ? new Date(value.endDate).toISOString() : null,
           pace: value.pace as any,
           max_participants: value.maxParticipants ? parseInt(value.maxParticipants, 10) : null,
           status: 'draft',
+          story: value.story.trim() || null,
+          cover_image: value.coverImage.trim() || null,
         })
         .select()
         .single()
@@ -90,6 +97,16 @@ function NewTripPage() {
     }
     fetchRoutes()
   }, [])
+
+  useEffect(() => {
+    const routeId = form.getFieldValue('routeId')
+    if (routeId) {
+      const r = routes.find((rt) => rt.id === routeId)
+      if (r?.cover_image) {
+        form.setFieldValue('coverImage', r.cover_image)
+      }
+    }
+  }, [form.getFieldValue('routeId'), routes])
 
   const addEquipment = () => {
     const trimmed = newItem.trim()
@@ -295,6 +312,77 @@ function NewTripPage() {
                       id={field.name}
                       name={field.name}
                       placeholder="Dirección o lugar"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                  </div>
+                )}
+              />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <form.Field
+                  name="meetingLat"
+                  children={(field) => (
+                    <div className="space-y-2">
+                      <Label htmlFor={field.name}>Latitud de encuentro</Label>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="number"
+                        step="any"
+                        placeholder="Ej: 4.65"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                    </div>
+                  )}
+                />
+                <form.Field
+                  name="meetingLng"
+                  children={(field) => (
+                    <div className="space-y-2">
+                      <Label htmlFor={field.name}>Longitud de encuentro</Label>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="number"
+                        step="any"
+                        placeholder="Ej: -74.05"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                    </div>
+                  )}
+                />
+              </div>
+              <form.Field
+                name="coverImage"
+                children={(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor={field.name}>URL de imagen de portada</Label>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      placeholder="https://example.com/image.jpg"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                  </div>
+                )}
+              />
+              <form.Field
+                name="story"
+                children={(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor={field.name}>Historia / Relato</Label>
+                    <Textarea
+                      id={field.name}
+                      name={field.name}
+                      placeholder="Comparte la historia o experiencia de esta salida..."
+                      rows={4}
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}

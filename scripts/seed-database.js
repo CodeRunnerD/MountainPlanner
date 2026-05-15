@@ -27,11 +27,11 @@ const admin = createClient(supabaseUrl, serviceRoleKey, {
 })
 
 const users = [
-  { email: 'carlos@example.com', password: 'password123', display_name: 'Carlos Montaña', role: 'organizer',     approval_status: 'active', neighborhood: 'Chapinero' },
-  { email: 'ana@example.com', password: 'password123', display_name: 'Ana Rios', role: 'expedition_lead',     approval_status: 'active', neighborhood: 'Usaquén' },
-  { email: 'luis@example.com', password: 'password123', display_name: 'Luis Peña', role: 'participant',     approval_status: 'active', neighborhood: 'Suba' },
-  { email: 'maria@example.com', password: 'password123', display_name: 'María Torres', role: 'participant',     approval_status: 'active', neighborhood: 'Teusaquillo' },
-  { email: 'diego@example.com', password: 'password123', display_name: 'Diego Herrera', role: 'participant',     approval_status: 'active', neighborhood: 'Envigado' },
+  { email: 'carlos@example.com', password: 'password123', display_name: 'Carlos Montaña', role: 'organizer',     approval_status: 'active', neighborhood: 'La Floresta' },
+  { email: 'ana@example.com', password: 'password123', display_name: 'Ana Rios', role: 'expedition_lead',     approval_status: 'active', neighborhood: 'González Suárez' },
+  { email: 'luis@example.com', password: 'password123', display_name: 'Luis Peña', role: 'participant',     approval_status: 'active', neighborhood: 'Cumbayá' },
+  { email: 'maria@example.com', password: 'password123', display_name: 'María Torres', role: 'participant',     approval_status: 'active', neighborhood: 'Iñaquito' },
+  { email: 'diego@example.com', password: 'password123', display_name: 'Diego Herrera', role: 'participant',     approval_status: 'active', neighborhood: 'Tumbaco' },
 ]
 
 async function seed() {
@@ -63,7 +63,7 @@ async function seed() {
   for (const u of createdUsers) {
     await admin.from('profiles').update({
       neighborhood: u.neighborhood,
-      phone: '+57 300 000 0000',
+      phone: '+593 99 000 0000',
       approval_status: u.approval_status,
     }).eq('id', u.id)
   }
@@ -71,39 +71,39 @@ async function seed() {
   // Create routes
   const { data: routes, error: routeErr } = await admin.from('routes').insert([
     {
-      name: 'Cumbre del Nevado del Tolima',
-      description: 'Ascenso técnico al Nevado del Tolima por la ruta tradicional. Requiere experiencia en hielo y nieve.',
-      cover_image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80',
-      difficulty: 'expert',
-      gpx_parsed: { distance: 28.5, elevation_gain: 2200, elevation_loss: 2200 },
-      source_url: 'https://wikiloc.com/rutas-senderismo/nevado-del-tolima',
+      name: 'Cotopaxi - Ruta Normal José Ribas',
+      description: 'Ascenso al volcán Cotopaxi (5,897 m), segunda cumbre más alta del Ecuador. Ruta clásica que parte desde el refugio José Ribas a 4,864 m.',
+      cover_image: 'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=1200&q=80',
+      difficulty: 'advanced',
+      gpx_parsed: { distance: 4, elevation_gain: 1033, elevation_loss: 1033 },
+      source_url: 'https://www.wikiloc.com/rutas-alpinismo/cotopaxi-ruta-normal',
       created_by: profileIds[0],
     },
     {
-      name: 'Laguna de Iguaque',
-      description: 'Caminata cultural y ecológica por la laguna sagrada de Iguaque.',
-      cover_image: 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=1200&q=80',
-      difficulty: 'beginner',
-      gpx_parsed: { distance: 14.2, elevation_gain: 800, elevation_loss: 800 },
-      source_url: 'https://wikiloc.com/rutas-senderismo/laguna-de-iguaque',
+      name: 'Chimborazo - Ruta Whymper (Cumbre Máxima)',
+      description: 'Ascenso al Chimborazo (6,263 m), el punto más alejado del centro de la Tierra. Ruta clásica Whymper desde el refugio Whymper.',
+      cover_image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80',
+      difficulty: 'expert',
+      gpx_parsed: { distance: 8, elevation_gain: 1300, elevation_loss: 1300 },
+      source_url: 'https://www.wikiloc.com/rutas-alpinismo/chimborazo-ruta-whymper',
       created_by: profileIds[1],
     },
     {
-      name: 'Pico de Loro',
-      description: 'Clásica ruta del Pico de Loro en el Parque Nacional Natural Farallones de Cali.',
-      cover_image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80',
+      name: 'Rucu Pichincha - Ruta Normal desde Quito',
+      description: 'Ascenso al Rucu Pichincha (4,696 m), volcán activo visible desde Quito. Accesible desde la ciudad, ruta popular para aclimatación.',
+      cover_image: 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=1200&q=80',
       difficulty: 'intermediate',
-      gpx_parsed: { distance: 18.0, elevation_gain: 1400, elevation_loss: 1400 },
-      source_url: 'https://wikiloc.com/rutas-senderismo/pico-de-loro',
+      gpx_parsed: { distance: 8, elevation_gain: 800, elevation_loss: 800 },
+      source_url: 'https://www.wikiloc.com/rutas-senderismo/rucu-pichincha',
       created_by: profileIds[0],
     },
     {
-      name: 'Cocuy Circuito Clásico',
-      description: 'Circuito de 5 días por el Parque Nacional Natural El Cocuy.',
-      cover_image: 'https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=1200&q=80',
+      name: 'Iliniza Norte - Ruta de la Arista',
+      description: 'Ascenso al Iliniza Norte (5,126 m), excelente para entrenamiento antes de Cotopaxi o Chimborazo. Ruta técnica por arista.',
+      cover_image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80',
       difficulty: 'advanced',
-      gpx_parsed: { distance: 52.0, elevation_gain: 3500, elevation_loss: 3500 },
-      source_url: 'https://wikiloc.com/rutas-senderismo/cocuy-circuito',
+      gpx_parsed: { distance: 6, elevation_gain: 900, elevation_loss: 900 },
+      source_url: 'https://www.wikiloc.com/rutas-alpinismo/iliniza-norte',
       created_by: profileIds[1],
     },
   ]).select()

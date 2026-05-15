@@ -15,3 +15,6 @@ todos.json
 # Supabase
 supabase/.branches
 supabase/.temp
+
+# SDD / Agent Teams
+.atl

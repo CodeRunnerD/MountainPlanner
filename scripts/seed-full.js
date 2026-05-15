@@ -97,11 +97,11 @@ async function seed() {
 
   // Update profiles with full info
   const profileUpdates = [
-    { id: carlosId, display_name: 'Carlos Montaña', avatar_url: 'https://i.pravatar.cc/150?u=user-1', role: 'organizer',     approval_status: 'active', phone: '+57 300 123 4567', neighborhood: 'Chapinero', lat: 4.6483, lng: -74.0628 },
-    { id: anaId, display_name: 'Ana Rios', avatar_url: 'https://i.pravatar.cc/150?u=user-2', role: 'expedition_lead',     approval_status: 'active', phone: '+57 310 987 6543', neighborhood: 'Usaquén', lat: 4.7021, lng: -74.0308 },
-    { id: luisId, display_name: 'Luis Peña', avatar_url: 'https://i.pravatar.cc/150?u=user-3', role: 'participant',     approval_status: 'active', phone: '+57 320 555 8888', neighborhood: 'Suba', lat: 4.7436, lng: -74.0827 },
-    { id: mariaId, display_name: 'María Torres', avatar_url: 'https://i.pravatar.cc/150?u=user-4', role: 'participant',     approval_status: 'active', phone: '+57 315 444 2222', neighborhood: 'Teusaquillo', lat: 4.6243, lng: -74.0892 },
-    { id: diegoId, display_name: 'Diego Herrera', avatar_url: 'https://i.pravatar.cc/150?u=user-5', role: 'participant',     approval_status: 'active', phone: '+57 317 777 3333', neighborhood: 'Envigado', lat: 6.1676, lng: -75.5838 },
+    { id: carlosId, display_name: 'Carlos Montaña', avatar_url: 'https://i.pravatar.cc/150?u=user-1', role: 'organizer',     approval_status: 'active', phone: '+593 99 123 4567', neighborhood: 'La Floresta', lat: -0.2053, lng: -78.4908 },
+    { id: anaId, display_name: 'Ana Rios', avatar_url: 'https://i.pravatar.cc/150?u=user-2', role: 'expedition_lead',     approval_status: 'active', phone: '+593 98 987 6543', neighborhood: 'González Suárez', lat: -0.1984, lng: -78.4823 },
+    { id: luisId, display_name: 'Luis Peña', avatar_url: 'https://i.pravatar.cc/150?u=user-3', role: 'participant',     approval_status: 'active', phone: '+593 99 555 8888', neighborhood: 'Cumbayá', lat: -0.2006, lng: -78.4406 },
+    { id: mariaId, display_name: 'María Torres', avatar_url: 'https://i.pravatar.cc/150?u=user-4', role: 'participant',     approval_status: 'active', phone: '+593 98 444 2222', neighborhood: 'Iñaquito', lat: -0.1761, lng: -78.4850 },
+    { id: diegoId, display_name: 'Diego Herrera', avatar_url: 'https://i.pravatar.cc/150?u=user-5', role: 'participant',     approval_status: 'active', phone: '+593 99 777 3333', neighborhood: 'Tumbaco', lat: -0.2206, lng: -78.4008 },
   ]
 
   for (const p of profileUpdates) {
@@ -112,43 +112,43 @@ async function seed() {
   // Routes
   const { data: routes, error: routeErr } = await admin.from('routes').insert([
     {
-      name: 'Cumbre del Nevado del Tolima',
-      description: 'Ascenso técnico al Nevado del Tolima por la ruta tradicional. Requiere experiencia en hielo y nieve.',
-      cover_image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80',
-      story: 'El Nevado del Tolima es uno de los picos más icónicos de la Cordillera Central. Con 5.216 msnm, su cumbre nevada ha sido el objetivo de montañistas colombianos por décadas.\n\nLa ruta tradicional parte desde la Finca El Silencio en el departamento del Tolima. El primer día consiste en una caminata de aproximadamente 8 km hasta el campamento base a 4.100 msnm. El segundo día es el ataque a cumbre: se sale a las 2:00 AM para evitar los fuertes vientos de la tarde y alcanzar la cumbre al amanecer.\n\nEl recorrido incluye pasos por glaciar activo, por lo que es obligatorio el uso de crampones y piolet. La exposición en algunos tramos es considerable y se requiere manejo básico de cuerdas para los pasos más técnicos.',
-      difficulty: 'expert',
-      gpx_parsed: { distance: 28.5, elevation_gain: 2200, elevation_loss: 2200 },
-      source_url: 'https://wikiloc.com/rutas-senderismo/nevado-del-tolima',
+      name: 'Cotopaxi - Ruta Normal José Ribas',
+      description: 'Ascenso al volcán Cotopaxi (5,897 m), segunda cumbre más alta del Ecuador. Ruta clásica que parte desde el refugio José Ribas a 4,864 m.',
+      cover_image: 'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=1200&q=80',
+      story: 'El volcán Cotopaxi es el ícono del Ecuador y una de las montañas más altas del mundo activas. Con 5.897 msnm, su cumbre nevada ha atraído a montañistas de todo el mundo por más de un siglo.\n\nLa ruta normal parte desde el refugio José Ribas a 4.864 msnm. El ascenso comienza en la medianoche para evitar los fuertes vientos de la tarde y alcanzar la cumbre al amanecer. Los primeros kilómetros atraviesan campo de piedras volcánicas hasta alcanzar el glaciar aproximadamente a 5.000 msnm.\n\nUna vez en el hielo, el uso de crampones y piolet es obligatorio. La pendiente promedio es de 30-35 grados, con algunos tramos que llegan a 40 grados cerca de la cumbre. El cráter del Cotopaxi es impresionante: un ancho de 800 metros y una profundidad de más de 1.000 metros. Desde la cumbre se divisan los volcanes Antisana, Cayambe y Chimborazo en días despejados.',
+      difficulty: 'advanced',
+      gpx_parsed: { distance: 4, elevation_gain: 1033, elevation_loss: 1033 },
+      source_url: 'https://www.wikiloc.com/rutas-alpinismo/cotopaxi-ruta-normal',
       created_by: carlosId,
     },
     {
-      name: 'Laguna de Iguaque',
-      description: 'Caminata cultural y ecológica por la laguna sagrada de Iguaque en el Parque Nacional de Iguaque.',
-      cover_image: 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=1200&q=80',
-      story: 'La laguna de Iguaque es considerada el ombligo del mundo en la mitología Muisca. Ubicada a 3.680 msnm en el Parque Nacional de Iguaque, esta ruta combina naturaleza, historia y espiritualidad.\n\nEl recorrido inicia en la entrada del parque y asciende gradualmente por un sendero bien marcado que atraviesa bosques de frailejón y páramo. A mitad de camino se encuentra la laguna Chiquita, un excelente punto para descansar antes del tramo final.\n\nLa llegada a la laguna de Iguaque ofrece un paisaje sobrecogedor: aguas cristalinas rodeadas de frailejones y montañas. Es una ruta accesible para principiantes en buena condición física.',
-      difficulty: 'beginner',
-      gpx_parsed: { distance: 14.2, elevation_gain: 800, elevation_loss: 800 },
-      source_url: 'https://wikiloc.com/rutas-senderismo/laguna-de-iguaque',
+      name: 'Chimborazo - Ruta Whymper (Cumbre Máxima)',
+      description: 'Ascenso al Chimborazo (6,263 m), el punto más alejado del centro de la Tierra. Ruta clásica Whymper desde el refugio Whymper.',
+      cover_image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80',
+      story: 'El Chimborazo es una montaña legendaria. Con 6.263 msnm, no es la más alta del mundo, pero gracias al abultamiento ecuatorial de la Tierra, su cumbre es el punto más alejado del centro del planeta, superando incluso al Everest.\n\nLa ruta Whymper, nombrada en honor al primer ascensionista Edward Whymper en 1880, parte desde el refugio Whymper a 5.000 msnm. El ascenso técnico atraviesa glaciar activo con grietas y seracs que exigen navegación cuidadosa.\n\nEl recorrido incluye una parada en el campo alto a 5.600 msnm antes del empuje final hacia las dos cumbres: Veintimilla (6.263 m) y Whymper (6.267 m). La altura extrema y la exposición hacen de este ascenso uno de los más desafiantes de Sudamérica. Solo alrededor del 50% de los intentos logran la cumbre debido a las condiciones meteorológicas impredecibles.',
+      difficulty: 'expert',
+      gpx_parsed: { distance: 8, elevation_gain: 1300, elevation_loss: 1300 },
+      source_url: 'https://www.wikiloc.com/rutas-alpinismo/chimborazo-ruta-whymper',
       created_by: anaId,
     },
     {
-      name: 'Pico de Loro',
-      description: 'Clásica ruta del Pico de Loro en el Parque Nacional Natural Farallones de Cali. Vistas espectaculares del Valle del Cauca.',
-      cover_image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80',
-      story: 'El Pico de Loro, con 2.860 msnm, es uno de los cerros tutelares de Cali y una de las rutas más populares del suroccidente colombiano. Su nombre proviene de la forma del pico, que recuerda al pico de un loro.\n\nLa ruta inicia desde el sector de Peñas Blancas en el Pance. El sendero es exigente desde el inicio, con pendientes pronunciadas que demandan buena condición física. A medida que se asciende, el bosque húmedo tropical da paso a bosque de niebla.\n\nLa cumbre ofrece una vista panorámica 360 grados del Valle del Cauca: de un lado se ve Cali y Yumbo, del otro los Farallones y la Cordillera Occidental. Es una ruta de un solo día, ideal para quienes buscan un reto moderado con gran recompensa visual.',
+      name: 'Rucu Pichincha - Ruta Normal desde Quito',
+      description: 'Ascenso al Rucu Pichincha (4,696 m), volcán activo visible desde Quito. Accesible desde la ciudad, ruta popular para aclimatación.',
+      cover_image: 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=1200&q=80',
+      story: 'El Rucu Pichincha es el guardián de Quito. Con 4.696 msnm, esta cumbre volcánica es visible desde casi cualquier punto de la capital ecuatoriana y es una de las rutas de aclimatación más populares del país.\n\nLa ruta normal utiliza el Teleférico de Quito, que parte desde 2.950 msnm y lleva a los caminantes hasta los 3.945 msnm en solo 20 minutos. Desde allí, el sendero asciende por una cresta herbosa con pendientes moderadas.\n\nA mitad de camino se cruza con la ruta hacia el Guagua Pichincha, el hermano gemelo del Rucu. El tramo final incluye una corta sección de trepada en roca (II grado) antes de alcanzar la cumbre. Desde arriba, la vista de Quito a 4.696 metros de altura es simplemente espectacular: una ciudad de 3 millones de habitantes extendida a tus pies, rodeada por la Cordillera de los Andes.',
       difficulty: 'intermediate',
-      gpx_parsed: { distance: 18.0, elevation_gain: 1400, elevation_loss: 1400 },
-      source_url: 'https://wikiloc.com/rutas-senderismo/pico-de-loro',
+      gpx_parsed: { distance: 8, elevation_gain: 800, elevation_loss: 800 },
+      source_url: 'https://www.wikiloc.com/rutas-senderismo/rucu-pichincha',
       created_by: carlosId,
     },
     {
-      name: 'Cocuy Circuito Clásico',
-      description: 'Circuito de 5 días por el Parque Nacional Natural El Cocuy. Incluye ascensos a Ritacuba Blanco y Pan de Azúcar.',
-      cover_image: 'https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=1200&q=80',
-      story: 'El Parque Nacional Natural El Cocuy alberga el sistema glaciar más grande de Colombia después del Nevado de Santa Isabel. El circuito clásico es una travesía de 5 días que recorre los valles de Lagunillas, Cóncavo y la Sierra Nevada del Cocuy.\n\nEl primer día lleva desde la cabaña de Kanwara hasta el valle de Lagunillas. El segundo día asciende a Ritacuba Blanco (5.410 msnm), el pico más alto del parque. Los días siguientes incluyen el paso por el Paso de Bellavista, la laguna Grande de la Sierra y el Pan de Azúcar.\n\nEs una expedición que demanda excelente condición física, aclimatación previa y experiencia en acampada de altura. Los paisajes de páramo, glaciares y lagunas de color esmeralda hacen de este uno de los trekings más impresionantes de Sudamérica.',
+      name: 'Iliniza Norte - Ruta de la Arista',
+      description: 'Ascenso al Iliniza Norte (5,126 m), excelente para entrenamiento antes de Cotopaxi o Chimborazo. Ruta técnica por arista.',
+      cover_image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80',
+      story: 'El Iliniza Norte es la montaña de entrenamiento por excelencia en Ecuador. Con 5.126 msnm, ofrece la combinación perfecta de altura, técnica y accesibilidad para quienes se preparan para el Cotopaxi o el Chimborazo.\n\nLa ruta de la arista parte desde el refugio Nuevos Horizontes a 4.268 msnm. Los primeros kilómetros atraviesan un campo de piedras volcánicas hasta llegar a "La Cueva", un refugio natural de roca a 4.700 msnm que marca el inicio de la parte técnica.\n\nDesde La Cueva, la ruta sigue una arista rocosa expuesta que exige el uso de manos y pies con cuidado. Hay pasos de trepada de hasta III grado. La arista ofrece exposición hacia ambos lados, con vistas impresionantes del Iliniza Sur (5.248 m) y los valles circundantes. La cumbre es una plataforma rocosa desde donde se divisan el Cotopaxi, el Antisana y el Cayambe en días claros.',
       difficulty: 'advanced',
-      gpx_parsed: { distance: 52.0, elevation_gain: 3500, elevation_loss: 3500 },
-      source_url: 'https://wikiloc.com/rutas-senderismo/cocuy-circuito',
+      gpx_parsed: { distance: 6, elevation_gain: 900, elevation_loss: 900 },
+      source_url: 'https://www.wikiloc.com/rutas-alpinismo/iliniza-norte',
       created_by: anaId,
     },
   ]).select()
@@ -160,115 +160,133 @@ async function seed() {
 
   console.log(`Created ${routes.length} routes`)
 
-  const routeTolima = routes.find(r => r.name.includes('Tolima'))
-  const routeIguaque = routes.find(r => r.name.includes('Iguaque'))
-  const routePico = routes.find(r => r.name.includes('Pico de Loro'))
-  const routeCocuy = routes.find(r => r.name.includes('Cocuy'))
+  const routeCotopaxi = routes.find(r => r.name.includes('Cotopaxi'))
+  const routeChimborazo = routes.find(r => r.name.includes('Chimborazo'))
+  const routePichincha = routes.find(r => r.name.includes('Pichincha'))
+  const routeIliniza = routes.find(r => r.name.includes('Iliniza'))
 
   // Waypoints
   await admin.from('route_waypoints').insert([
-    { route_id: routeTolima.id, name: 'Finca El Silencio', lat: 4.6583, lng: -75.3228, elevation: 3200, order_index: 0, type: 'start' },
-    { route_id: routeTolima.id, name: 'Campamento Base', lat: 4.6601, lng: -75.3154, elevation: 4100, order_index: 1, type: 'waypoint' },
-    { route_id: routeTolima.id, name: 'Cumbre Nevado del Tolima', lat: 4.6742, lng: -75.3247, elevation: 5215, order_index: 2, type: 'summit' },
-    { route_id: routeTolima.id, name: 'Retorno Finca', lat: 4.6583, lng: -75.3228, elevation: 3200, order_index: 3, type: 'end' },
-    { route_id: routeIguaque.id, name: 'Entrada Parque', lat: 5.4167, lng: -73.4500, elevation: 2800, order_index: 0, type: 'start' },
-    { route_id: routeIguaque.id, name: 'Laguna de Iguaque', lat: 5.4234, lng: -73.4456, elevation: 3680, order_index: 1, type: 'summit' },
-    { route_id: routeIguaque.id, name: 'Salida', lat: 5.4167, lng: -73.4500, elevation: 2800, order_index: 2, type: 'end' },
-    { route_id: routePico.id, name: 'Base Farallones', lat: 3.4167, lng: -76.5333, elevation: 1800, order_index: 0, type: 'start' },
-    { route_id: routePico.id, name: 'Pico de Loro', lat: 3.4256, lng: -76.5289, elevation: 2860, order_index: 1, type: 'summit' },
-    { route_id: routePico.id, name: 'Retorno', lat: 3.4167, lng: -76.5333, elevation: 1800, order_index: 2, type: 'end' },
+    { route_id: routeCotopaxi.id, name: 'Refugio José Ribas', lat: -0.6833, lng: -78.4386, elevation: 4864, order_index: 0, type: 'start' },
+    { route_id: routeCotopaxi.id, name: 'Campamento de piedra', lat: -0.6767, lng: -78.4344, elevation: 5200, order_index: 1, type: 'waypoint' },
+    { route_id: routeCotopaxi.id, name: 'Cumbre Cotopaxi', lat: -0.6838, lng: -78.4382, elevation: 5897, order_index: 2, type: 'summit' },
+    { route_id: routeCotopaxi.id, name: 'Refugio José Ribas', lat: -0.6833, lng: -78.4386, elevation: 4864, order_index: 3, type: 'end' },
+
+    { route_id: routeChimborazo.id, name: 'Refugio Whymper', lat: -1.4697, lng: -78.8175, elevation: 5000, order_index: 0, type: 'start' },
+    { route_id: routeChimborazo.id, name: 'Campo alto', lat: -1.4667, lng: -78.8167, elevation: 5600, order_index: 1, type: 'waypoint' },
+    { route_id: routeChimborazo.id, name: 'Cumbre Chimborazo (Veintimilla)', lat: -1.4692, lng: -78.8175, elevation: 6263, order_index: 2, type: 'summit' },
+    { route_id: routeChimborazo.id, name: 'Cumbre Chimborazo (Whymper)', lat: -1.4694, lng: -78.8178, elevation: 6267, order_index: 3, type: 'summit' },
+    { route_id: routeChimborazo.id, name: 'Refugio Whymper', lat: -1.4697, lng: -78.8175, elevation: 5000, order_index: 4, type: 'end' },
+
+    { route_id: routePichincha.id, name: 'Estación Teleférico Quito', lat: -0.1876, lng: -78.5085, elevation: 3945, order_index: 0, type: 'start' },
+    { route_id: routePichincha.id, name: 'Cruce de Guagua Pichincha', lat: -0.1756, lng: -78.5981, elevation: 4200, order_index: 1, type: 'waypoint' },
+    { route_id: routePichincha.id, name: 'Cumbre Rucu Pichincha', lat: -0.1869, lng: -78.5708, elevation: 4696, order_index: 2, type: 'summit' },
+    { route_id: routePichincha.id, name: 'Estación Teleférico Quito', lat: -0.1876, lng: -78.5085, elevation: 3945, order_index: 3, type: 'end' },
+
+    { route_id: routeIliniza.id, name: 'Refugio Nuevos Horizontes', lat: -0.6594, lng: -78.7156, elevation: 4268, order_index: 0, type: 'start' },
+    { route_id: routeIliniza.id, name: 'La Cueva', lat: -0.6589, lng: -78.7133, elevation: 4700, order_index: 1, type: 'waypoint' },
+    { route_id: routeIliniza.id, name: 'Cumbre Iliniza Norte', lat: -0.6606, lng: -78.7142, elevation: 5126, order_index: 2, type: 'summit' },
+    { route_id: routeIliniza.id, name: 'Refugio Nuevos Horizontes', lat: -0.6594, lng: -78.7156, elevation: 4268, order_index: 3, type: 'end' },
   ])
   console.log('Waypoints created.')
 
   // Skills
   await admin.from('route_skill_requirements').insert([
-    { route_id: routeTolima.id, skill_tag: 'Manejo de cuerdas' },
-    { route_id: routeTolima.id, skill_tag: 'Autodetención en hielo' },
-    { route_id: routeTolima.id, skill_tag: 'Uso de crampones' },
-    { route_id: routeTolima.id, skill_tag: 'Nivel físico avanzado' },
-    { route_id: routeCocuy.id, skill_tag: 'Manejo de cuerdas' },
-    { route_id: routeCocuy.id, skill_tag: 'Acampada de altura' },
-    { route_id: routeCocuy.id, skill_tag: 'Nivel físico avanzado' },
-    { route_id: routePico.id, skill_tag: 'Nivel físico intermedio' },
+    { route_id: routeCotopaxi.id, skill_tag: 'Uso de crampones' },
+    { route_id: routeCotopaxi.id, skill_tag: 'Manejo de piolet' },
+    { route_id: routeCotopaxi.id, skill_tag: 'Aclimatación a gran altura' },
+    { route_id: routeCotopaxi.id, skill_tag: 'Físico avanzado' },
+    { route_id: routeChimborazo.id, skill_tag: 'Uso de crampones' },
+    { route_id: routeChimborazo.id, skill_tag: 'Técnicas de autodetención' },
+    { route_id: routeChimborazo.id, skill_tag: 'Manejo de piolet' },
+    { route_id: routeChimborazo.id, skill_tag: 'Aclimatación extrema' },
+    { route_id: routeChimborazo.id, skill_tag: 'Físico de élite' },
+    { route_id: routePichincha.id, skill_tag: 'Trekking de altura' },
+    { route_id: routePichincha.id, skill_tag: 'Aclimatación moderada' },
+    { route_id: routePichincha.id, skill_tag: 'Físico intermedio' },
+    { route_id: routeIliniza.id, skill_tag: 'Trekking técnico' },
+    { route_id: routeIliniza.id, skill_tag: 'Uso de manos' },
+    { route_id: routeIliniza.id, skill_tag: 'Aclimatación a gran altura' },
+    { route_id: routeIliniza.id, skill_tag: 'Físico avanzado' },
   ])
   console.log('Skills created.')
 
   // Trips
   const { data: trips, error: tripErr } = await admin.from('trips').insert([
     {
-      route_id: routeTolima.id,
+      route_id: routeCotopaxi.id,
       organizer_id: carlosId,
-      title: 'Ascenso Tolima — Enero 2026',
-      meeting_point: 'Parqueadero Terminal Salitre, Bogotá',
-      meeting_lat: 4.6473,
-      meeting_lng: -74.0955,
+      title: 'Ascenso Cotopaxi — Enero 2026',
+      meeting_point: 'Estacionamiento Teleférico Quito, Ecuador',
+      meeting_lat: -0.1876,
+      meeting_lng: -78.5085,
       start_date: '2026-01-15T04:00:00Z',
       end_date: '2026-01-17T20:00:00Z',
       pace: 'medium',
       status: 'open',
       max_participants: 8,
-      cover_image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80',
-      story: 'Una aventura inolvidable al Nevado del Tolima. Partimos desde Ibagué a las 4:00 AM con el equipo completo. La primera jornada nos llevó a establecer el campamento base a 4,100 msnm. La noche fue fría pero despejada, con una vía láctea impresionante.\n\nEl segundo día iniciamos el ataque a cumbre a las 2:00 AM. Las condiciones de hielo eran perfectas y todos los participantes lograron llegar a la cumbre a las 7:30 AM. El glaciar se veía espectacular con la luz del amanecer.',
+      cover_image: 'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=1200&q=80',
+      story: 'Una aventura inolvidable al volcán Cotopaxi. Partimos desde Quito a las 4:00 AM con el equipo completo. La primera jornada nos llevó al refugio José Ribas a 4.864 msnm para aclimatación. La noche fue fría pero despejada, con una vía láctea impresionante sobre el cono perfecto del volcán.\n\nEl segundo día iniciamos el ataque a cumbre a la medianoche. Las condiciones de hielo eran perfectas y todos los participantes lograron llegar a la cumbre a las 7:30 AM. El cráter humeante se veía espectacular con la luz del amanecer y el Chimborazo asomaba en el horizonte.',
     },
     {
-      route_id: routePico.id,
+      route_id: routePichincha.id,
       organizer_id: anaId,
-      title: 'Pico de Loro Weekend',
-      meeting_point: 'Calle 5 # 10-20, Cali',
-      meeting_lat: 3.4516,
-      meeting_lng: -76.5319,
+      title: 'Rucu Pichincha Weekend',
+      meeting_point: 'Estación Teleférico Quito, Quito',
+      meeting_lat: -0.1876,
+      meeting_lng: -78.5085,
       start_date: '2025-12-20T06:00:00Z',
       end_date: '2025-12-21T18:00:00Z',
       pace: 'sport',
       status: 'completed',
       max_participants: 12,
-      cover_image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80',
-      story: 'El Pico de Loro nunca decepciona. Esta vez salimos desde Cali con un grupo de 8 personas. El ascenso fue rápido gracias al buen ritmo del grupo.\n\nEn la cumbre tuvimos una neblina matutina que se disipó justo al mediodía, regalándonos vistas panorámicas del Valle del Cauca. Bajamos por la tarde y celebramos con cervezas artesanales en Pance.',
+      cover_image: 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=1200&q=80',
+      story: 'El Rucu Pichincha nunca decepciona. Esta vez salimos desde el Teleférico de Quito con un grupo de 8 personas. El ascenso fue rápido gracias al buen ritmo del grupo y la aclimatación previa.\n\nEn la cumbre tuvimos una neblina matutina que se disipó justo al mediodía, regalándonos vistas panorámicas de Quito y los valles circundantes. Bajamos por la tarde y celebramos con cervezas artesanales en La Floresta.',
     },
     {
-      route_id: routeIguaque.id,
+      route_id: routeIliniza.id,
       organizer_id: carlosId,
-      title: 'Iguaque Cultural Walk',
-      meeting_point: 'Plaza de Bolívar, Villa de Leyva',
-      meeting_lat: 5.6333,
-      meeting_lng: -73.5333,
+      title: 'Iliniza Norte - Entrenamiento de Arista',
+      meeting_point: 'El Chaupi, Provincia de Cotopaxi',
+      meeting_lat: -0.6719,
+      meeting_lng: -78.7286,
       start_date: '2026-02-08T07:00:00Z',
       end_date: '2026-02-08T16:00:00Z',
       pace: 'slow',
       status: 'draft',
       max_participants: 15,
-      cover_image: 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=1200&q=80',
-      story: 'Una caminata suave y cultural por los caminos de la laguna sagrada de Iguaque. Aprendimos sobre la mitología Muisca y la importancia ecológica de este ecosistema de páramo.',
+      cover_image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80',
+      story: 'Una salida de entrenamiento perfecta para preparar el Cotopaxi. La arista del Iliniza Norte ofrece la combinación ideal de altura y técnica sin llegar al extremo del glaciar.\n\nEl grupo practicó movimientos en roca expuesta y navegación de arista. Desde la cumbre se veía el Cotopaxi completamente despejado, una vista que motivó a todos para la próxima expedición.',
     },
     {
-      route_id: routeCocuy.id,
+      route_id: routeChimborazo.id,
       organizer_id: anaId,
-      title: 'Cocuy 5D — Carnavales 2026',
-      meeting_point: 'Aeropuerto El Dorado, Bogotá',
-      meeting_lat: 4.7014,
-      meeting_lng: -74.1469,
+      title: 'Chimborazo 5D — Carnavales 2026',
+      meeting_point: 'Riobamba, Chimborazo',
+      meeting_lat: -1.6716,
+      meeting_lng: -78.6479,
       start_date: '2026-02-28T05:00:00Z',
       end_date: '2026-03-04T19:00:00Z',
       pace: 'medium',
       status: 'open',
       max_participants: 6,
-      cover_image: 'https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=1200&q=80',
-      story: 'El circuito clásico del Cocuy es una experiencia de 5 días que todo montañista colombiano debe vivir. Incluye ascensos a Ritacuba Blanco y Pan de Azúcar.',
+      cover_image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80',
+      story: 'El Chimborazo es el sueño de todo andinista ecuatoriano. Esta expedición de 5 días incluye días de aclimatación progresiva en el refugio Whymper y campo alto antes del intento de cumbre.\n\nLos participantes recorrerán los 1.300 metros de desnivel positivo desde el refugio hasta la cumbre máxima, pasando por la cumbre Veintimilla. El objetivo es alcanzar el punto más alejado del centro de la Tierra.',
     },
     {
-      route_id: routeIguaque.id,
+      route_id: routePichincha.id,
       organizer_id: anaId,
-      title: 'Iguaque al Amanecer',
-      meeting_point: 'Villa de Leyva, Boyacá',
-      meeting_lat: 5.6333,
-      meeting_lng: -73.5333,
+      title: 'Rucu Pichincha al Amanecer',
+      meeting_point: 'Teleférico de Quito, Quito',
+      meeting_lat: -0.1876,
+      meeting_lng: -78.5085,
       start_date: '2025-11-15T05:00:00Z',
       end_date: '2025-11-15T14:00:00Z',
       pace: 'slow',
       status: 'completed',
       max_participants: 10,
       cover_image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200&q=80',
-      story: 'Salida madrugadora para ver el amanecer desde la laguna de Iguaque. El paramo se tiñó de dorado y rosa mientras subíamos. Una experiencia mágica que recomendamos a todos.',
+      story: 'Salida madrugadora para ver el amanecer desde el Rucu Pichincha. El cielo de Quito se tiñó de dorado y rosa mientras subíamos por la arista. Desde la cumbre, la ciudad amanecía lentamente a nuestros pies.\n\nUna experiencia mágica que demuestra que no hace falta ir muy lejos para encontrar aventura: desde el centro de Quito hasta los 4.696 msnm en menos de 6 horas.',
     },
   ]).select()
 
@@ -279,43 +297,43 @@ async function seed() {
 
   console.log(`Created ${trips.length} trips`)
 
-  const tripTolima = trips.find(t => t.title.includes('Tolima'))
-  const tripPico = trips.find(t => t.title.includes('Pico de Loro'))
-  const tripCocuy = trips.find(t => t.title.includes('Cocuy'))
+  const tripCotopaxi = trips.find(t => t.title.includes('Cotopaxi'))
+  const tripPichincha = trips.find(t => t.title.includes('Rucu Pichincha Weekend'))
+  const tripChimborazo = trips.find(t => t.title.includes('Chimborazo'))
 
   // Trip participants
   const { data: participants } = await admin.from('trip_participants').insert([
-    { trip_id: tripTolima.id, profile_id: anaId, status: 'confirmed', needs_transport: false },
-    { trip_id: tripTolima.id, profile_id: luisId, status: 'confirmed', needs_transport: true },
-    { trip_id: tripTolima.id, profile_id: mariaId, status: 'pending', needs_transport: true },
-    { trip_id: tripPico.id, profile_id: carlosId, status: 'confirmed', needs_transport: false },
-    { trip_id: tripPico.id, profile_id: luisId, status: 'confirmed', needs_transport: true },
-    { trip_id: tripPico.id, profile_id: diegoId, status: 'confirmed', needs_transport: true },
-    { trip_id: tripCocuy.id, profile_id: carlosId, status: 'confirmed', needs_transport: false },
-    { trip_id: tripCocuy.id, profile_id: luisId, status: 'pending', needs_transport: true },
+    { trip_id: tripCotopaxi.id, profile_id: anaId, status: 'confirmed', needs_transport: false },
+    { trip_id: tripCotopaxi.id, profile_id: luisId, status: 'confirmed', needs_transport: true },
+    { trip_id: tripCotopaxi.id, profile_id: mariaId, status: 'pending', needs_transport: true },
+    { trip_id: tripPichincha.id, profile_id: carlosId, status: 'confirmed', needs_transport: false },
+    { trip_id: tripPichincha.id, profile_id: luisId, status: 'confirmed', needs_transport: true },
+    { trip_id: tripPichincha.id, profile_id: diegoId, status: 'confirmed', needs_transport: true },
+    { trip_id: tripChimborazo.id, profile_id: carlosId, status: 'confirmed', needs_transport: false },
+    { trip_id: tripChimborazo.id, profile_id: luisId, status: 'pending', needs_transport: true },
   ]).select()
 
   console.log(`Created ${participants?.length ?? 0} participants`)
 
   // Equipment
   const { data: equipment } = await admin.from('trip_equipment_requirements').insert([
-    { trip_id: tripTolima.id, item_name: 'Crampones', mandatory: true },
-    { trip_id: tripTolima.id, item_name: 'Piolet', mandatory: true },
-    { trip_id: tripTolima.id, item_name: 'Casco', mandatory: true },
-    { trip_id: tripTolima.id, item_name: 'Gafas de sol UV400', mandatory: true },
-    { trip_id: tripTolima.id, item_name: 'Botas de montaña', mandatory: true },
-    { trip_id: tripTolima.id, item_name: 'Cuerda 60m', mandatory: false },
-    { trip_id: tripPico.id, item_name: 'Botas de trekking', mandatory: true },
-    { trip_id: tripPico.id, item_name: 'Ropa impermeable', mandatory: true },
-    { trip_id: tripPico.id, item_name: 'Cantimplora 2L', mandatory: true },
+    { trip_id: tripCotopaxi.id, item_name: 'Crampones', mandatory: true },
+    { trip_id: tripCotopaxi.id, item_name: 'Piolet', mandatory: true },
+    { trip_id: tripCotopaxi.id, item_name: 'Casco', mandatory: true },
+    { trip_id: tripCotopaxi.id, item_name: 'Gafas de sol UV400', mandatory: true },
+    { trip_id: tripCotopaxi.id, item_name: 'Botas de montaña', mandatory: true },
+    { trip_id: tripCotopaxi.id, item_name: 'Cuerda 60m', mandatory: false },
+    { trip_id: tripPichincha.id, item_name: 'Botas de trekking', mandatory: true },
+    { trip_id: tripPichincha.id, item_name: 'Ropa impermeable', mandatory: true },
+    { trip_id: tripPichincha.id, item_name: 'Cantimplora 2L', mandatory: true },
   ]).select()
 
   console.log(`Created ${equipment?.length ?? 0} equipment items`)
 
   // Vehicles
   const { data: vehicles } = await admin.from('vehicles').insert([
-    { owner_id: carlosId, trip_id: tripTolima.id, model: 'Toyota Land Cruiser Prado', capacity: 4, tags: ['4x4', 'Baúl amplio', 'Aire acondicionado'], is_confirmed: true },
-    { owner_id: anaId, trip_id: tripTolima.id, model: 'Mitsubishi Montero Sport', capacity: 3, tags: ['4x4', 'Tracción doble'], is_confirmed: true },
+    { owner_id: carlosId, trip_id: tripCotopaxi.id, model: 'Toyota Land Cruiser Prado', capacity: 4, tags: ['4x4', 'Baúl amplio', 'Aire acondicionado'], is_confirmed: true },
+    { owner_id: anaId, trip_id: tripCotopaxi.id, model: 'Mitsubishi Montero Sport', capacity: 3, tags: ['4x4', 'Tracción doble'], is_confirmed: true },
   ]).select()
 
   console.log(`Created ${vehicles?.length ?? 0} vehicles`)
@@ -338,8 +356,8 @@ async function seed() {
 
   // Summit logs
   await admin.from('summit_log').insert([
-    { profile_id: carlosId, trip_id: tripTolima.id, route_id: routeTolima.id, completed_at: '2026-01-16T11:30:00Z', notes: 'Condiciones perfectas. Sin viento en cumbre.' },
-    { profile_id: anaId, trip_id: tripPico.id, route_id: routePico.id, completed_at: '2025-12-20T13:00:00Z', notes: 'Neblina en la mañana pero se despejó al mediodía.' },
+    { profile_id: carlosId, trip_id: tripCotopaxi.id, route_id: routeCotopaxi.id, completed_at: '2026-01-16T11:30:00Z', notes: 'Condiciones perfectas. Sin viento en cumbre. Vista del Chimborazo.' },
+    { profile_id: anaId, trip_id: tripPichincha.id, route_id: routePichincha.id, completed_at: '2025-12-20T13:00:00Z', notes: 'Neblina en la mañana pero se despejó al mediodía. Vista de Quito espectacular.' },
   ])
   console.log('Summit logs created.')
 

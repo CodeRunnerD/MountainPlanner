@@ -271,6 +271,7 @@ export type Database = {
           id: string
           name: string
           source_url: string | null
+          status: Database["public"]["Enums"]["route_status"]
           story: string | null
         }
         Insert: {
@@ -284,6 +285,7 @@ export type Database = {
           id?: string
           name: string
           source_url?: string | null
+          status?: Database["public"]["Enums"]["route_status"]
           story?: string | null
         }
         Update: {
@@ -297,6 +299,7 @@ export type Database = {
           id?: string
           name?: string
           source_url?: string | null
+          status?: Database["public"]["Enums"]["route_status"]
           story?: string | null
         }
         Relationships: [
@@ -644,6 +647,7 @@ export type Database = {
       equipment_status: "owned" | "needs_rental"
       expense_category: "fuel" | "rental" | "food" | "other"
       registration_status: "pending" | "confirmed" | "rejected" | "cancelled"
+      route_status: "draft" | "pending_approval" | "published"
       trip_pace: "slow" | "medium" | "sport"
       trip_status: "draft" | "open" | "closed" | "completed" | "cancelled"
       user_approval_status:
@@ -788,6 +792,7 @@ export const Constants = {
       equipment_status: ["owned", "needs_rental"],
       expense_category: ["fuel", "rental", "food", "other"],
       registration_status: ["pending", "confirmed", "rejected", "cancelled"],
+      route_status: ["draft", "pending_approval", "published"],
       trip_pace: ["slow", "medium", "sport"],
       trip_status: ["draft", "open", "closed", "completed", "cancelled"],
       user_approval_status: [

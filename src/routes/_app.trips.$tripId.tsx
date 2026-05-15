@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
+import { Input } from '#/components/ui/input'
 import { Badge } from '#/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs'
@@ -21,6 +22,8 @@ import {
   HelpCircle,
   Wrench,
   Loader2,
+  Plus,
+  Trash2,
 } from 'lucide-react'
 import type { Tables } from '#/types/database.types'
 
@@ -50,53 +53,136 @@ function TripDetailPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [transportAssignments, setTransportAssignments] = useState<TransportAssignment[]>([])
   const [loading, setLoading] = useState(true)
+  const [newEquipmentItem, setNewEquipmentItem] = useState('')
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+
+  const fetchData = async () => {
+    setLoading(true)
+    const { data: t } = await supabase.from('trips').select('*').eq('id', tripId).single()
+    if (!t) {
+      setLoading(false)
+      return
+    }
+    setTrip(t)
+
+    const [{ data: r }, { data: o }, { data: p }, { data: e }, { data: v }, { data: ta }] = await Promise.all([
+      supabase.from('routes').select('*').eq('id', t.route_id).single(),
+      supabase.from('profiles').select('*').eq('id', t.organizer_id).single(),
+      supabase.from('trip_participants').select('*').eq('trip_id', tripId),
+      supabase.from('trip_equipment_requirements').select('*').eq('trip_id', tripId),
+      supabase.from('vehicles').select('*').eq('trip_id', tripId),
+      supabase.from('transport_assignments').select('*'),
+    ])
+
+    setRoute(r)
+    setOrganizer(o)
+    setParticipants(p || [])
+    setEquipment(e || [])
+    setVehicles(v || [])
+    setTransportAssignments(ta || [])
+
+    // Fetch participant profiles
+    if (p && p.length > 0) {
+      const profileIds = p.map((tp) => tp.profile_id)
+      const { data: profs } = await supabase.from('profiles').select('*').in('id', profileIds)
+      const profMap: Record<string, Profile> = {}
+      profs?.forEach((prof) => { profMap[prof.id] = prof })
+      setParticipantProfiles(profMap)
+    }
+
+    // Fetch participant equipment
+    if (p && p.length > 0 && e && e.length > 0) {
+      const participantIds = p.map((tp) => tp.id)
+      const { data: pe } = await supabase.from('participant_equipment').select('*').in('participant_id', participantIds)
+      setParticipantEquipment(pe || [])
+    }
+
+    setLoading(false)
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      const { data: t } = await supabase.from('trips').select('*').eq('id', tripId).single()
-      if (!t) {
-        setLoading(false)
-        return
-      }
-      setTrip(t)
-
-      const [{ data: r }, { data: o }, { data: p }, { data: e }, { data: v }, { data: ta }] = await Promise.all([
-        supabase.from('routes').select('*').eq('id', t.route_id).single(),
-        supabase.from('profiles').select('*').eq('id', t.organizer_id).single(),
-        supabase.from('trip_participants').select('*').eq('trip_id', tripId),
-        supabase.from('trip_equipment_requirements').select('*').eq('trip_id', tripId),
-        supabase.from('vehicles').select('*').eq('trip_id', tripId),
-        supabase.from('transport_assignments').select('*'),
-      ])
-
-      setRoute(r)
-      setOrganizer(o)
-      setParticipants(p || [])
-      setEquipment(e || [])
-      setVehicles(v || [])
-      setTransportAssignments(ta || [])
-
-      // Fetch participant profiles
-      if (p && p.length > 0) {
-        const profileIds = p.map((tp) => tp.profile_id)
-        const { data: profs } = await supabase.from('profiles').select('*').in('id', profileIds)
-        const profMap: Record<string, Profile> = {}
-        profs?.forEach((prof) => { profMap[prof.id] = prof })
-        setParticipantProfiles(profMap)
-      }
-
-      // Fetch participant equipment
-      if (p && p.length > 0 && e && e.length > 0) {
-        const participantIds = p.map((tp) => tp.id)
-        const { data: pe } = await supabase.from('participant_equipment').select('*').in('participant_id', participantIds)
-        setParticipantEquipment(pe || [])
-      }
-
-      setLoading(false)
-    }
     fetchData()
   }, [tripId])
+
+  const updateParticipantStatus = async (participantId: string, status: string) => {
+    setActionLoading(participantId)
+    const { error } = await supabase
+      .from('trip_participants')
+      .update({ status })
+      .eq('id', participantId)
+    if (error) {
+      alert('Error al actualizar estado: ' + error.message)
+    } else {
+      setParticipants((prev) => prev.map((p) => (p.id === participantId ? { ...p, status: status as any } : p)))
+    }
+    setActionLoading(null)
+  }
+
+  const addEquipmentRequirement = async () => {
+    const trimmed = newEquipmentItem.trim()
+    if (!trimmed || !trip) return
+    const { data, error } = await supabase
+      .from('trip_equipment_requirements')
+      .insert({ trip_id: trip.id, item_name: trimmed, mandatory: false })
+      .select()
+      .single()
+    if (error) {
+      alert('Error al agregar equipo: ' + error.message)
+      return
+    }
+    setEquipment((prev) => [...prev, data])
+    setNewEquipmentItem('')
+  }
+
+  const removeEquipmentRequirement = async (eqId: string) => {
+    if (!trip) return
+    const { error } = await supabase
+      .from('trip_equipment_requirements')
+      .delete()
+      .eq('id', eqId)
+    if (error) {
+      alert('Error al eliminar equipo: ' + error.message)
+      return
+    }
+    setEquipment((prev) => prev.filter((e) => e.id !== eqId))
+    setParticipantEquipment((prev) => prev.filter((pe) => pe.equipment_id !== eqId))
+  }
+
+  const myParticipant = participants.find((p) => p.profile_id === user?.profile?.id)
+
+  const updateMyEquipment = async (equipmentId: string, status: 'owned' | 'needs_rental' | null) => {
+    if (!myParticipant) return
+    const existing = participantEquipment.find(
+      (pe) => pe.equipment_id === equipmentId && pe.participant_id === myParticipant.id
+    )
+    if (status === null) {
+      if (existing) {
+        await supabase.from('participant_equipment').delete().eq('id', existing.id)
+        setParticipantEquipment((prev) => prev.filter((pe) => pe.id !== existing.id))
+      }
+      return
+    }
+    if (existing) {
+      const { error } = await supabase
+        .from('participant_equipment')
+        .update({ status })
+        .eq('id', existing.id)
+      if (!error) {
+        setParticipantEquipment((prev) =>
+          prev.map((pe) => (pe.id === existing.id ? { ...pe, status } : pe))
+        )
+      }
+    } else {
+      const { data, error } = await supabase
+        .from('participant_equipment')
+        .insert({ participant_id: myParticipant.id, equipment_id: equipmentId, status })
+        .select()
+        .single()
+      if (!error && data) {
+        setParticipantEquipment((prev) => [...prev, data])
+      }
+    }
+  }
 
   if (loading) {
     return (
@@ -131,6 +217,15 @@ function TripDetailPage() {
       case 'rejected': return <XCircle className="h-4 w-4 text-destructive" />
       case 'cancelled': return <XCircle className="h-4 w-4 text-muted-foreground" />
       default: return <HelpCircle className="h-4 w-4 text-amber-500" />
+    }
+  }
+
+  const regStatusBadge = (status: string) => {
+    switch (status) {
+      case 'confirmed': return <Badge className="bg-green-100 text-green-700 border-0">Confirmado</Badge>
+      case 'rejected': return <Badge className="bg-destructive/10 text-destructive border-0">Rechazado</Badge>
+      case 'cancelled': return <Badge className="bg-muted text-muted-foreground border-0">Cancelado</Badge>
+      default: return <Badge className="bg-amber-100 text-amber-700 border-0">Pendiente</Badge>
     }
   }
 
@@ -248,14 +343,53 @@ function TripDetailPage() {
                         {p.needs_transport ? 'Necesita transporte' : 'Con transporte propio'}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap justify-end">
                       {assignedParticipantIds.has(p.id) && (
                         <Badge variant="outline" className="text-xs gap-1">
                           <Car className="h-3 w-3" /> Asignado
                         </Badge>
                       )}
-                      {regStatusIcon(p.status)}
-                      <span className="text-xs capitalize text-muted-foreground">{p.status}</span>
+                      {regStatusBadge(p.status)}
+                      {isTripOrganizer && p.status !== 'cancelled' && (
+                        <div className="flex gap-1">
+                          {p.status !== 'confirmed' && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              disabled={actionLoading === p.id}
+                              onClick={() => updateParticipantStatus(p.id, 'confirmed')}
+                            >
+                              Confirmar
+                            </Button>
+                          )}
+                          {p.status !== 'rejected' && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              disabled={actionLoading === p.id}
+                              onClick={() => updateParticipantStatus(p.id, 'rejected')}
+                            >
+                              Rechazar
+                            </Button>
+                          )}
+                          {p.status !== 'cancelled' && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              disabled={actionLoading === p.id}
+                              onClick={() => updateParticipantStatus(p.id, 'cancelled')}
+                            >
+                              Cancelar
+                            </Button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )
@@ -275,22 +409,78 @@ function TripDetailPage() {
                 Requisitos de equipo
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-4">
+              {isTripOrganizer && (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Ej: Crampones, Casco..."
+                    value={newEquipmentItem}
+                    onChange={(e) => setNewEquipmentItem(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addEquipmentRequirement())}
+                  />
+                  <Button type="button" variant="secondary" onClick={addEquipmentRequirement}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
               {equipment.map((eq) => {
                 const ownedCount = participantEquipment.filter(
                   (pe) => pe.equipment_id === eq.id && pe.status === 'owned'
                 ).length
+                const rentalCount = participantEquipment.filter(
+                  (pe) => pe.equipment_id === eq.id && pe.status === 'needs_rental'
+                ).length
+                const myEq = myParticipant
+                  ? participantEquipment.find(
+                      (pe) => pe.equipment_id === eq.id && pe.participant_id === myParticipant.id
+                    )
+                  : undefined
                 return (
-                  <div key={eq.id} className="flex items-center justify-between rounded-lg border border-border bg-card/50 p-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-foreground">{eq.item_name}</span>
+                  <div key={eq.id} className="flex items-center justify-between rounded-lg border border-border bg-card/50 p-3 gap-3">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <span className="text-sm text-foreground truncate">{eq.item_name}</span>
                       {eq.mandatory && (
                         <Badge variant="destructive" className="text-[10px]">Obligatorio</Badge>
                       )}
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {ownedCount} tienen · {participants.length - ownedCount} faltan
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {ownedCount} tienen · {rentalCount} alquilan · {participants.length - ownedCount - rentalCount} sin definir
                     </span>
+                    <div className="flex items-center gap-2">
+                      {myParticipant && (
+                        <div className="flex gap-1">
+                          <Button
+                            type="button"
+                            variant={myEq?.status === 'owned' ? 'default' : 'outline'}
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => updateMyEquipment(eq.id, myEq?.status === 'owned' ? null : 'owned')}
+                          >
+                            Tengo
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={myEq?.status === 'needs_rental' ? 'secondary' : 'outline'}
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => updateMyEquipment(eq.id, myEq?.status === 'needs_rental' ? null : 'needs_rental')}
+                          >
+                            Necesito alquilar
+                          </Button>
+                        </div>
+                      )}
+                      {isTripOrganizer && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => removeEquipmentRequirement(eq.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 )
               })}
@@ -299,25 +489,6 @@ function TripDetailPage() {
               )}
             </CardContent>
           </Card>
-
-          {equipment.length > 0 && (
-            <Card className="border-border shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">Mi checklist</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {equipment.map((eq) => (
-                  <div key={eq.id} className="flex items-center gap-3 p-2">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-                    />
-                    <span className="text-sm">{eq.item_name}</span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          )}
         </TabsContent>
 
         <TabsContent value="transport" className="space-y-4">
