@@ -86,9 +86,9 @@ export function RouteMap({
 			}
 
 			polylineRef.current = L.polyline(simplifiedPoints, {
-				color: "#d1d5db",
-				weight: 3,
-				opacity: 0.9,
+				color: "#2563eb",
+				weight: 4,
+				opacity: 0.85,
 			}).addTo(map);
 
 			for (const pt of simplifiedPoints) {
