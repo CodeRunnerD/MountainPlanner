@@ -26,7 +26,6 @@ import {
 } from "#/components/ui/table";
 import { supabase } from "#/lib/supabase";
 import { useAuth } from "#/contexts/AuthContext";
-import { getUserWithProfile } from "#/lib/session.functions";
 import { requireApprovedOrganizer } from "#/lib/route-guards";
 import { parseGpx } from "#/lib/gpx";
 import { parseKml } from "#/lib/kml";
@@ -56,10 +55,6 @@ type Route = Tables<"routes">;
 type RouteWaypoint = Tables<"route_waypoints">;
 
 export const Route = createFileRoute("/_app/routes/$routeId/edit")({
-	beforeLoad: async () => {
-		const data = await getUserWithProfile();
-		requireApprovedOrganizer(data?.profile);
-	},
 	component: EditRoutePage,
 });
 
