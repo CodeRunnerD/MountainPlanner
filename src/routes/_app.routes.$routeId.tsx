@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useChildMatches } from "@tanstack/react-router";
 import {
 	ArrowLeft,
 	Calendar,
@@ -39,6 +39,7 @@ export const Route = createFileRoute("/_app/routes/$routeId")({
 
 function RouteDetailPage() {
 	const { routeId } = Route.useParams();
+	const childMatches = useChildMatches();
 	const [route, setRoute] = useState<Route | null>(null);
 	const [waypoints, setWaypoints] = useState<RouteWaypoint[]>([]);
 	const [parsedWaypoints, setParsedWaypoints] = useState<ParsedWaypoint[]>([]);
@@ -169,33 +170,12 @@ function RouteDetailPage() {
 		setRoute((prev) => (prev ? { ...prev, status: newStatus } : prev));
 	};
 
-	if (loading) {
-		return (
-			<div className="flex items-center justify-center py-20">
-				<Loader2 className="h-8 w-8 animate-spin text-primary" />
-			</div>
-		);
-	}
-
-	if (error || !route) {
-		return (
-			<div className="text-center py-12 space-y-4">
-				<p className="text-destructive font-medium">
-					{error ?? "Ruta no encontrada"}
-				</p>
-				<Button asChild variant="link">
-					<Link to="/routes">Volver a rutas</Link>
-				</Button>
-			</div>
-		);
-	}
-
 	const canEditRoute =
 		isOrganizer &&
 		(role === "organizer" ||
 			(role === "expedition_lead" &&
 				isCreator &&
-				route.status !== "published"));
+				route?.status !== "published"));
 
 	const getWaypointIcon = (type: string) => {
 		switch (type) {
@@ -211,245 +191,264 @@ function RouteDetailPage() {
 	};
 
 	return (
-		<div className="space-y-6 max-w-4xl mx-auto">
-			<Button variant="ghost" size="sm" asChild className="gap-1">
-				<Link to="/routes">
-					<ArrowLeft className="h-4 w-4" /> Volver a rutas
-				</Link>
-			</Button>
-
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-				<div>
-					<div className="flex items-center gap-2">
-						<h1 className="text-3xl font-bold text-foreground">
-							{route.name}
-						</h1>
-						<DraftBadge status={route.status} />
-					</div>
-					<p className="text-muted-foreground mt-1">{route.description}</p>
+		<>
+			{childMatches.length > 0 ? (
+				<Outlet />
+			) : loading ? (
+				<div className="flex items-center justify-center py-20">
+					<Loader2 className="h-8 w-8 animate-spin text-primary" />
 				</div>
-				<div className="flex gap-2 flex-wrap">
-					{canEditRoute && (
-						<Button variant="outline" asChild>
-							<Link
-								to="/routes/$routeId/edit"
-								params={{ routeId: route.id }}
-							>
-								Editar
-							</Link>
-						</Button>
-					)}
-					{route.gpx_file_path && (
-						<Button
-							variant="outline"
-							onClick={handleDownload}
-							disabled={downloading}
-						>
-							{downloading ? (
-								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							) : (
-								<Download className="mr-2 h-4 w-4" />
-							)}
-							Descargar GPX/KML
-						</Button>
-					)}
-					<Button asChild>
-						<Link to="/trips/new" search={{ routeId: route.id }}>
-							Crear salida
-						</Link>
+			) : error || !route ? (
+				<div className="text-center py-12 space-y-4">
+					<p className="text-destructive font-medium">
+						{error ?? "Ruta no encontrada"}
+					</p>
+					<Button asChild variant="link">
+						<Link to="/routes">Volver a rutas</Link>
 					</Button>
 				</div>
-			</div>
+			) : (
+				<div className="space-y-6 max-w-4xl mx-auto">
+					<Button variant="ghost" size="sm" asChild className="gap-1">
+						<Link to="/routes">
+							<ArrowLeft className="h-4 w-4" /> Volver a rutas
+						</Link>
+					</Button>
 
-			{role === "organizer" &&
-				route.status === "pending_approval" && (
-					<ApprovalPanel
-						route={route}
-						onStatusChange={handleStatusChange}
-					/>
-				)}
-
-			<div className="grid gap-4 sm:grid-cols-3">
-				<Card className="border-border shadow-sm">
-					<CardContent className="flex items-center gap-3 p-4">
-						<TrendingUp className="h-5 w-5 text-primary" />
+					<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 						<div>
-							<p className="text-lg font-bold text-foreground">
-								{(route.gpx_parsed as any)?.distance ?? 0} km
-							</p>
-							<p className="text-xs text-muted-foreground">Distancia</p>
+							<div className="flex items-center gap-2">
+								<h1 className="text-3xl font-bold text-foreground">
+									{route.name}
+								</h1>
+								<DraftBadge status={route.status} />
+							</div>
+							<p className="text-muted-foreground mt-1">{route.description}</p>
 						</div>
-					</CardContent>
-				</Card>
-				<Card className="border-border shadow-sm">
-					<CardContent className="flex items-center gap-3 p-4">
-						<Layers className="h-5 w-5 text-secondary" />
-						<div>
-							<p className="text-lg font-bold text-foreground">
-								{(route.gpx_parsed as any)?.elevation_gain ?? 0} m
-							</p>
-							<p className="text-xs text-muted-foreground">
-								Desnivel positivo
-							</p>
+						<div className="flex gap-2 flex-wrap">
+							{canEditRoute && (
+								<Button variant="outline" asChild>
+									<Link
+										to="/routes/$routeId/edit"
+										params={{ routeId: route.id }}
+									>
+										Editar
+									</Link>
+								</Button>
+							)}
+							{route.gpx_file_path && (
+								<Button
+									variant="outline"
+									onClick={handleDownload}
+									disabled={downloading}
+								>
+									{downloading ? (
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									) : (
+										<Download className="mr-2 h-4 w-4" />
+									)}
+									Descargar GPX/KML
+								</Button>
+							)}
+							<Button asChild>
+								<Link to="/trips/new" search={{ routeId: route.id }}>
+									Crear salida
+								</Link>
+							</Button>
 						</div>
-					</CardContent>
-				</Card>
-				<Card className="border-border shadow-sm">
-					<CardContent className="flex items-center gap-3 p-4">
-						<Mountain className="h-5 w-5 text-accent" />
-						<div>
-							<p className="text-lg font-bold text-foreground">
-								{waypoints.find((w) => w.type === "summit")?.elevation ??
-									"—"}{" "}
-								m
-							</p>
-							<p className="text-xs text-muted-foreground">Cumbre</p>
-						</div>
-					</CardContent>
-				</Card>
-			</div>
+					</div>
 
-			{parsedWaypoints.length > 0 && (
-				<Card className="border-border shadow-sm">
-					<CardHeader>
-						<CardTitle className="text-lg flex items-center gap-2">
-							<MapIcon className="h-5 w-5 text-primary" />
-							Mapa de la ruta
-						</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<RouteMap
-							waypoints={parsedWaypoints}
-							trackPoints={parsedWaypoints.map((wp) => [
-								wp.lat,
-								wp.lng,
-							])}
-							height="400px"
-						/>
-					</CardContent>
-				</Card>
-			)}
+					{role === "organizer" &&
+						route.status === "pending_approval" && (
+							<ApprovalPanel
+								route={route}
+								onStatusChange={handleStatusChange}
+							/>
+						)}
 
-			<div className="grid gap-6 lg:grid-cols-2">
-				<Card className="border-border shadow-sm">
-					<CardHeader>
-						<CardTitle className="text-lg flex items-center gap-2">
-							<MapIcon className="h-5 w-5 text-primary" />
-							Waypoints
-						</CardTitle>
-					</CardHeader>
-					<CardContent className="space-y-3">
-						{waypoints.map((wp) => (
-							<div
-								key={wp.id}
-								className="flex items-center gap-3 rounded-lg border border-border bg-card/50 p-3"
-							>
-								{getWaypointIcon(wp.type)}
-								<div className="flex-1 min-w-0">
-									<p className="font-medium text-sm text-foreground truncate">
-										{wp.name}
+					<div className="grid gap-4 sm:grid-cols-3">
+						<Card className="border-border shadow-sm">
+							<CardContent className="flex items-center gap-3 p-4">
+								<TrendingUp className="h-5 w-5 text-primary" />
+								<div>
+									<p className="text-lg font-bold text-foreground">
+										{(route.gpx_parsed as any)?.distance ?? 0} km
+									</p>
+									<p className="text-xs text-muted-foreground">Distancia</p>
+								</div>
+							</CardContent>
+						</Card>
+						<Card className="border-border shadow-sm">
+							<CardContent className="flex items-center gap-3 p-4">
+								<Layers className="h-5 w-5 text-secondary" />
+								<div>
+									<p className="text-lg font-bold text-foreground">
+										{(route.gpx_parsed as any)?.elevation_gain ?? 0} m
 									</p>
 									<p className="text-xs text-muted-foreground">
-										{wp.elevation ? `${wp.elevation} m` : "—"}
+										Desnivel positivo
 									</p>
 								</div>
-								<Badge variant="outline" className="text-xs capitalize">
-									{wp.type}
-								</Badge>
-							</div>
-						))}
-					</CardContent>
-				</Card>
-
-				<div className="space-y-6">
-					<Card className="border-border shadow-sm">
-						<CardHeader>
-							<CardTitle className="text-lg">
-								Habilidades requeridas
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
-							{skills.length === 0 ? (
-								<p className="text-sm text-muted-foreground">
-									Sin requisitos técnicos
-								</p>
-							) : (
-								<div className="flex flex-wrap gap-2">
-									{skills.map((s) => (
-										<Badge key={s.id} variant="secondary">
-											{s.skill_tag}
-										</Badge>
-									))}
+							</CardContent>
+						</Card>
+						<Card className="border-border shadow-sm">
+							<CardContent className="flex items-center gap-3 p-4">
+								<Mountain className="h-5 w-5 text-accent" />
+								<div>
+									<p className="text-lg font-bold text-foreground">
+										{waypoints.find((w) => w.type === "summit")?.elevation ??
+											"—"}{" "}
+										m
+									</p>
+									<p className="text-xs text-muted-foreground">Cumbre</p>
 								</div>
-							)}
-						</CardContent>
-					</Card>
+							</CardContent>
+						</Card>
+					</div>
 
-					<Card className="border-border shadow-sm">
-						<CardHeader>
-							<CardTitle className="text-lg">Información</CardTitle>
-						</CardHeader>
-						<CardContent className="space-y-2 text-sm">
-							<div className="flex justify-between">
-								<span className="text-muted-foreground">Creado por</span>
-								<span className="font-medium">
-									{creator?.display_name ?? "—"}
-								</span>
-							</div>
-							<div className="flex justify-between">
-								<span className="text-muted-foreground">Fecha</span>
-								<span>
-									{new Date(route.created_at).toLocaleDateString("es-CO")}
-								</span>
-							</div>
-							{route.difficulty && (
-								<div className="flex justify-between">
-									<span className="text-muted-foreground">Dificultad</span>
-									<span className="font-medium capitalize">
-										{route.difficulty}
-									</span>
-								</div>
-							)}
-							{route.source_url && (
-								<div className="flex justify-between">
-									<span className="text-muted-foreground">Fuente</span>
-									<a
-										href={route.source_url}
-										target="_blank"
-										rel="noreferrer"
-										className="text-primary hover:underline truncate max-w-[200px]"
-									>
-										Wikiloc
-									</a>
-								</div>
-							)}
-						</CardContent>
-					</Card>
-
-					{tripsUsing.length > 0 && (
+					{parsedWaypoints.length > 0 && (
 						<Card className="border-border shadow-sm">
 							<CardHeader>
 								<CardTitle className="text-lg flex items-center gap-2">
-									<Calendar className="h-4 w-4" />
-									Salidas usando esta ruta
+									<MapIcon className="h-5 w-5 text-primary" />
+									Mapa de la ruta
 								</CardTitle>
 							</CardHeader>
-							<CardContent className="space-y-2">
-								{tripsUsing.map((trip) => (
-									<Link
-										key={trip.id}
-										to="/trips/$tripId"
-										params={{ tripId: trip.id }}
-										className="block rounded-md p-2 text-sm hover:bg-muted transition-colors"
-									>
-										{trip.title}
-									</Link>
-								))}
+							<CardContent>
+								<RouteMap
+									waypoints={parsedWaypoints}
+									trackPoints={parsedWaypoints.map((wp) => [
+										wp.lat,
+										wp.lng,
+									])}
+									height="400px"
+								/>
 							</CardContent>
 						</Card>
 					)}
-				</div>
-			</div>
-		</div>
+
+					<div className="grid gap-6 lg:grid-cols-2">
+						<Card className="border-border shadow-sm">
+							<CardHeader>
+								<CardTitle className="text-lg flex items-center gap-2">
+									<MapIcon className="h-5 w-5 text-primary" />
+									Waypoints
+								</CardTitle>
+							</CardHeader>
+							<CardContent className="space-y-3">
+								{waypoints.map((wp) => (
+									<div
+										key={wp.id}
+										className="flex items-center gap-3 rounded-lg border border-border bg-card/50 p-3"
+									>
+										{getWaypointIcon(wp.type)}
+										<div className="flex-1 min-w-0">
+											<p className="font-medium text-sm text-foreground truncate">
+												{wp.name}
+											</p>
+											<p className="text-xs text-muted-foreground">
+												{wp.elevation ? `${wp.elevation} m` : "—"}
+											</p>
+										</div>
+										<Badge variant="outline" className="text-xs capitalize">
+											{wp.type}
+										</Badge>
+									</div>
+								))}
+								</CardContent>
+							</Card>
+
+							<div className="space-y-6">
+								<Card className="border-border shadow-sm">
+									<CardHeader>
+										<CardTitle className="text-lg">
+											Habilidades requeridas
+										</CardTitle>
+									</CardHeader>
+									<CardContent>
+										{skills.length === 0 ? (
+											<p className="text-sm text-muted-foreground">
+												Sin requisitos técnicos
+											</p>
+										) : (
+											<div className="flex flex-wrap gap-2">
+												{skills.map((s) => (
+													<Badge key={s.id} variant="secondary">
+														{s.skill_tag}
+													</Badge>
+												))}
+											</div>
+										)}
+									</CardContent>
+								</Card>
+
+								<Card className="border-border shadow-sm">
+									<CardHeader>
+										<CardTitle className="text-lg">Información</CardTitle>
+									</CardHeader>
+									<CardContent className="space-y-2 text-sm">
+										<div className="flex justify-between">
+											<span className="text-muted-foreground">Creado por</span>
+											<span className="font-medium">
+												{creator?.display_name ?? "—"}
+											</span>
+										</div>
+										<div className="flex justify-between">
+											<span className="text-muted-foreground">Fecha</span>
+											<span>
+												{new Date(route.created_at).toLocaleDateString("es-CO")}
+											</span>
+										</div>
+										{route.difficulty && (
+											<div className="flex justify-between">
+												<span className="text-muted-foreground">Dificultad</span>
+												<span className="font-medium capitalize">
+													{route.difficulty}
+												</span>
+											</div>
+										)}
+										{route.source_url && (
+											<div className="flex justify-between">
+												<span className="text-muted-foreground">Fuente</span>
+												<a
+													href={route.source_url}
+													target="_blank"
+													rel="noreferrer"
+													className="text-primary hover:underline truncate max-w-[200px]"
+												>
+													Wikiloc
+												</a>
+											</div>
+										)}
+									</CardContent>
+								</Card>
+
+								{tripsUsing.length > 0 && (
+									<Card className="border-border shadow-sm">
+										<CardHeader>
+											<CardTitle className="text-lg flex items-center gap-2">
+												<Calendar className="h-4 w-4" />
+												Salidas usando esta ruta
+											</CardTitle>
+										</CardHeader>
+										<CardContent className="space-y-2">
+											{tripsUsing.map((trip) => (
+												<Link
+													key={trip.id}
+													to="/trips/$tripId"
+													params={{ tripId: trip.id }}
+													className="block rounded-md p-2 text-sm hover:bg-muted transition-colors"
+												>
+													{trip.title}
+												</Link>
+											))}
+										</CardContent>
+									</Card>
+								)}
+							</div>
+						</div>
+					</div>
+			)}
+		</>
 	);
 }
