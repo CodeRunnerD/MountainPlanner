@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet, useChildMatches } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Badge } from '#/components/ui/badge'
@@ -23,6 +23,13 @@ export const Route = createFileRoute('/_app/routes')({
 })
 
 function RoutesListPage() {
+  const childMatches = useChildMatches()
+
+  // Si hay una ruta hija activa, renderizar el Outlet
+  if (childMatches.length > 0) {
+    return <Outlet />
+  }
+
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<RouteStatus | 'all'>('all')
   const [routes, setRoutes] = useState<Route[]>([])
