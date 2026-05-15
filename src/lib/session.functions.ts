@@ -36,7 +36,9 @@ export const getUserWithProfile = createServerFn({ method: 'GET' }).handler(asyn
 export const requireRouteEditableServer = createServerFn({ method: 'GET' })
   .handler(async ({ request }) => {
     const url = new URL(request.url)
-    const routeId = url.pathname.split('/').filter(Boolean).pop() ?? ''
+    const segments = url.pathname.split('/').filter(Boolean)
+    const routeIndex = segments.indexOf('routes')
+    const routeId = routeIndex >= 0 ? segments[routeIndex + 1] ?? '' : ''
     const supabase = getServerSupabase()
     const { data: authData } = await supabase.auth.getUser()
     if (!authData.user) {

@@ -107,11 +107,11 @@ export function ParallaxWrapper({ children }: { children: ReactNode }) {
           <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 4228.796 1129.942" className="block h-auto w-full">
   <defs>
     <linearGradient id="linear-gradient" x1="0.496" y1="-0.121" x2="0.502" y2="0.874" gradientUnits="objectBoundingBox">
-      <stop offset="0" stop-color="#de5654"/>
-      <stop offset="0.13" stop-color="#ce5254"/>
-      <stop offset="0.37" stop-color="#a74854"/>
-      <stop offset="0.7" stop-color="#673955"/>
-      <stop offset="1" stop-color="#282a57"/>
+      <stop offset="0" stopColor="#de5654"/>
+      <stop offset="0.13" stopColor="#ce5254"/>
+      <stop offset="0.37" stopColor="#a74854"/>
+      <stop offset="0.7" stopColor="#673955"/>
+      <stop offset="1" stopColor="#282a57"/>
     </linearGradient>
   </defs>
   <g id="mountain-1" transform="translate(-3898.812 -6192.585)">
@@ -133,11 +133,11 @@ export function ParallaxWrapper({ children }: { children: ReactNode }) {
        <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 4228.796 1066.036" className="block h-auto w-full">
   <defs>
     <linearGradient id="linear-gradient" x1="0.476" y1="-0.734" x2="0.504" y2="0.845" gradientUnits="objectBoundingBox">
-      <stop offset="0" stop-color="#de5654"/>
-      <stop offset="0.13" stop-color="#ce5254"/>
-      <stop offset="0.37" stop-color="#a74854"/>
-      <stop offset="0.7" stop-color="#673955"/>
-      <stop offset="1" stop-color="#282a57"/>
+      <stop offset="0" stopColor="#de5654"/>
+      <stop offset="0.13" stopColor="#ce5254"/>
+      <stop offset="0.37" stopColor="#a74854"/>
+      <stop offset="0.7" stopColor="#673955"/>
+      <stop offset="1" stopColor="#282a57"/>
     </linearGradient>
     <linearGradient id="linear-gradient-2" x1="0.595" y1="-0.18" x2="0.485" y2="0.693" xlinkHref="#linear-gradient"/>
     <linearGradient id="linear-gradient-3" x1="0.684" y1="-0.16" x2="0.549" y2="0.69" xlinkHref="#linear-gradient"/>
