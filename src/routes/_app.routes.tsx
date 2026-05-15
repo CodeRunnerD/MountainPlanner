@@ -25,11 +25,6 @@ export const Route = createFileRoute('/_app/routes')({
 function RoutesListPage() {
   const childMatches = useChildMatches()
 
-  // Si hay una ruta hija activa, renderizar el Outlet
-  if (childMatches.length > 0) {
-    return <Outlet />
-  }
-
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<RouteStatus | 'all'>('all')
   const [routes, setRoutes] = useState<Route[]>([])
@@ -84,123 +79,125 @@ function RoutesListPage() {
     return matchesSearch && matchesStatus && isVisible
   })
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
-  }
-
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Rutas</h1>
-          <p className="text-muted-foreground">Explora y gestiona rutas de montaña</p>
+    <>
+      {childMatches.length > 0 ? (
+        <Outlet />
+      ) : loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-        {isOrganizer && (
-          <Button asChild>
-            <Link to="/routes/new">
-              <Plus className="mr-2 h-4 w-4" />
-              Nueva ruta
-            </Link>
-          </Button>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar rutas..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as RouteStatus | 'all')}
-            className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
-          >
-            <option value="all">Todos los estados</option>
-            {visibleStatuses.includes('published') && (
-              <option value="published">Publicadas</option>
+      ) : (
+        <div className="space-y-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Rutas</h1>
+              <p className="text-muted-foreground">Explora y gestiona rutas de montaña</p>
+            </div>
+            {isOrganizer && (
+              <Button asChild>
+                <Link to="/routes/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nueva ruta
+                </Link>
+              </Button>
             )}
-            {visibleStatuses.includes('pending_approval') && (
-              <option value="pending_approval">Pendientes</option>
-            )}
-            {visibleStatuses.includes('draft') && (
-              <option value="draft">Borradores</option>
-            )}
-          </select>
-        </div>
-      </div>
+          </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((route) => {
-          const routeWaypoints = waypoints.filter((w) => w.route_id === route.id)
-          const routeSkills = skills.filter((s) => s.route_id === route.id)
-          const creator = profiles.find((p) => p.id === route.created_by)
-          return (
-            <Card key={route.id} className="border-border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-base font-semibold leading-tight">{route.name}</CardTitle>
-                  <Map className="h-4 w-4 text-primary" />
-                </div>
-                <p className="text-xs text-muted-foreground line-clamp-2">{route.description}</p>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <DraftBadge status={route.status} />
-                  {route.created_by === userId && (
-                    <Badge variant="outline" className="text-xs">Propia</Badge>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <TrendingUp className="h-3.5 w-3.5" />
-                    {(route.gpx_parsed as any)?.distance ?? 0} km
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Layers className="h-3.5 w-3.5" />
-                    {(route.gpx_parsed as any)?.elevation_gain ?? 0} m+
-                  </span>
-                </div>
-
-                {routeSkills.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {routeSkills.slice(0, 3).map((s) => (
-                      <Badge key={s.id} variant="secondary" className="text-xs">
-                        {s.skill_tag}
-                      </Badge>
-                    ))}
-                    {routeSkills.length > 3 && (
-                      <Badge variant="outline" className="text-xs">+{routeSkills.length - 3}</Badge>
-                    )}
-                  </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Buscar rutas..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as RouteStatus | 'all')}
+                className="h-10 rounded-md border border-input bg-transparent px-3 text-sm"
+              >
+                <option value="all">Todos los estados</option>
+                {visibleStatuses.includes('published') && (
+                  <option value="published">Publicadas</option>
                 )}
+                {visibleStatuses.includes('pending_approval') && (
+                  <option value="pending_approval">Pendientes</option>
+                )}
+                {visibleStatuses.includes('draft') && (
+                  <option value="draft">Borradores</option>
+                )}
+              </select>
+            </div>
+          </div>
 
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-xs text-muted-foreground">
-                    {routeWaypoints.length} waypoints · Por {creator?.display_name ?? 'Anónimo'}
-                  </span>
-                  <Button size="sm" variant="ghost" asChild className="gap-1">
-                    <Link to="/routes/$routeId" params={{ routeId: route.id }}>
-                      Ver <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-    </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((route) => {
+              const routeWaypoints = waypoints.filter((w) => w.route_id === route.id)
+              const routeSkills = skills.filter((s) => s.route_id === route.id)
+              const creator = profiles.find((p) => p.id === route.created_by)
+              return (
+                <Card key={route.id} className="border-border shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <CardTitle className="text-base font-semibold leading-tight">{route.name}</CardTitle>
+                      <Map className="h-4 w-4 text-primary" />
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{route.description}</p>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <DraftBadge status={route.status} />
+                      {route.created_by === userId && (
+                        <Badge variant="outline" className="text-xs">Propia</Badge>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <TrendingUp className="h-3.5 w-3.5" />
+                        {(route.gpx_parsed as any)?.distance ?? 0} km
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Layers className="h-3.5 w-3.5" />
+                        {(route.gpx_parsed as any)?.elevation_gain ?? 0} m+
+                      </span>
+                    </div>
+
+                    {routeSkills.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {routeSkills.slice(0, 3).map((s) => (
+                          <Badge key={s.id} variant="secondary" className="text-xs">
+                            {s.skill_tag}
+                          </Badge>
+                        ))}
+                        {routeSkills.length > 3 && (
+                          <Badge variant="outline" className="text-xs">+{routeSkills.length - 3}</Badge>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-xs text-muted-foreground">
+                        {routeWaypoints.length} waypoints · Por {creator?.display_name ?? 'Anónimo'}
+                      </span>
+                      <Button size="sm" variant="ghost" asChild className="gap-1">
+                        <Link to="/routes/$routeId" params={{ routeId: route.id }}>
+                          Ver <ArrowRight className="h-3.5 w-3.5" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </>
   )
 }
